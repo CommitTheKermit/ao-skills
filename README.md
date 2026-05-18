@@ -64,3 +64,11 @@ cp /path/to/ao-skills/commands/* .claude/commands/
 | `/learn` | 소크라테스식 점진 학습 모드 진입 |
 | `/pr-description` | PR 디스크립션을 정해진 형식으로 작성 |
 | `/pr-review-answer` | PR 리뷰 코멘트 질문에 대한 답변을 정해진 형식으로 작성 |
+
+## 최근 변경내역
+
+### 2026-05-18 - `socratic-learn` / `/learn` 사이클 단순화
+- 기존: 응답 1(설명) → 응답 2(확인 질문) → 응답 3(채점) 의 3-응답 구조
+- 변경: **응답 1(설명 + 확인 질문)** → **응답 2(사용자 답 → 채점 + 분기)** 의 2-응답 구조
+- 이유: 설명 직후 질문을 받아야 학습자가 답할 타이밍을 놓치지 않음. 사이클 호흡을 짧게 가져감.
+- 영향 파일: `commands/learn.md`, `skills/socratic-learn/SKILL.md`
