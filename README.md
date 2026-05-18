@@ -7,12 +7,15 @@ Claude Code에서 사용 중인 개인 스킬(Skill)과 슬래시 커맨드(Slas
 ```
 ao-skills/
 ├── skills/
-│   └── socratic-learn/      # 소크라테스식 점진 학습 스킬
+│   ├── socratic-learn/      # 소크라테스식 점진 학습 스킬
+│   │   └── SKILL.md
+│   └── ao-skill-update/     # 스킬/커맨드 변경 워크플로우 스킬
 │       └── SKILL.md
 └── commands/
     ├── learn.md             # /learn - 학습 모드 진입
     ├── pr-description.md    # /pr-description - PR 디스크립션 작성
-    └── pr-review-answer.md  # /pr-review-answer - PR 리뷰 답변 작성
+    ├── pr-review-answer.md  # /pr-review-answer - PR 리뷰 답변 작성
+    └── ao-skill-update.md   # /ao-skill-update - 스킬/커맨드 변경+동기화+커밋+푸시
 ```
 
 ## 스킬 vs 커맨드
@@ -57,6 +60,11 @@ cp /path/to/ao-skills/commands/* .claude/commands/
 
 발동 표현: "X 학습 도와줘", "X 배우고 싶어", "X 개념부터 다시" 등.
 
+### ao-skill-update
+이 레포의 스킬/커스텀 커맨드를 추가/수정/삭제한 뒤 `~/.claude/`로 동기화하고 커밋과 푸시까지 자동 처리하는 워크플로우.
+
+발동 표현: "스킬 만들자", "스킬 수정", "커맨드 추가", "커맨드 변경", "스킬 동기화" 등.
+
 ## 커맨드 목록
 
 | 커맨드 | 설명 |
@@ -64,8 +72,14 @@ cp /path/to/ao-skills/commands/* .claude/commands/
 | `/learn` | 소크라테스식 점진 학습 모드 진입 |
 | `/pr-description` | PR 디스크립션을 정해진 형식으로 작성 |
 | `/pr-review-answer` | PR 리뷰 코멘트 질문에 대한 답변을 정해진 형식으로 작성 |
+| `/ao-skill-update` | 스킬/커맨드 변경 + 전역 동기화 + 커밋 + 푸시 |
 
 ## 최근 변경내역
+
+### 2026-05-18 - 신규 추가: `ao-skill-update` 스킬 / `/ao-skill-update` 커맨드
+- 종류: 스킬 + 커맨드 (페어)
+- 목적: 스킬/커맨드 변경 시 레포를 단일 진실 소스로 두고 `~/.claude/`로 cp -R 동기화 후 커밋+푸시까지 일괄 처리
+- 영향 파일: `skills/ao-skill-update/SKILL.md`, `commands/ao-skill-update.md`, `README.md`
 
 ### 2026-05-18 - `socratic-learn` / `/learn` 사이클 단순화
 - 기존: 응답 1(설명) → 응답 2(확인 질문) → 응답 3(채점) 의 3-응답 구조
