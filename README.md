@@ -9,7 +9,11 @@ ao-skills/
 ├── skills/
 │   ├── socratic-learn/      # 소크라테스식 점진 학습 스킬
 │   │   └── SKILL.md
-│   └── ao-skill-update/     # 스킬/커맨드 변경 워크플로우 스킬
+│   ├── ao-skill-update/     # 스킬/커맨드 변경 워크플로우 스킬
+│   │   └── SKILL.md
+│   ├── pr-notion-todo/      # PR을 노션 TODO 페이지로 정리하는 스킬
+│   │   └── SKILL.md
+│   └── stt-refine/          # STT 녹취록을 검수본·요약본으로 변환하는 스킬
 │       └── SKILL.md
 └── commands/
     ├── learn.md             # /learn - 학습 모드 진입
@@ -65,6 +69,16 @@ cp /path/to/ao-skills/commands/* .claude/commands/
 
 발동 표현: "스킬 만들자", "스킬 수정", "커맨드 추가", "커맨드 변경", "스킬 동기화" 등.
 
+### pr-notion-todo
+GitHub PR을 분석해 Notion 월별/지정 페이지 아래에 체크박스 TODO 하위 페이지를 만든다. 맨 위에 PR 링크를 달고, 각 TODO 제목에 근거가 된 PR 리뷰 코멘트 링크를 매핑해 추적 가능하게 한다.
+
+발동 표현: "PR 보고 노션에 투두 만들어줘", "PR 리뷰를 노션 TODO로 정리", "이 PR 액션아이템 노션 페이지로" 등.
+
+### stt-refine
+STT(Speech-to-Text) 녹취 텍스트를 검수본(음성 인식 오류·끊긴 문장·화자 분리 보정)과 요약본(토픽별 재구성) 두 개의 마크다운 파일로 변환한다. 연속 회차 통합본 작성도 지원한다.
+
+발동 표현: "검수해줘", "요약해줘", "녹취록 정리", "회의록 만들어줘", "STT 다듬어줘", "통합본 만들어줘" 등.
+
 ## 커맨드 목록
 
 | 커맨드 | 설명 |
@@ -75,6 +89,16 @@ cp /path/to/ao-skills/commands/* .claude/commands/
 | `/ao-skill-update` | 스킬/커맨드 변경 + 전역 동기화 + 커밋 + 푸시 |
 
 ## 최근 변경내역
+
+### 2026-06-02 - 신규 추가: `stt-refine` 스킬
+- 종류: 스킬
+- 목적: STT 녹취록을 맥락 기반으로 보정한 검수본과 토픽별 재구성 요약본 두 개의 마크다운으로 변환 (연속 회차 통합본 포함)
+- 영향 파일: `skills/stt-refine/SKILL.md`, `README.md`
+
+### 2026-06-02 - 신규 추가: `pr-notion-todo` 스킬
+- 종류: 스킬
+- 목적: GitHub PR을 분석해 Notion 페이지 아래에 TODO 하위 페이지를 만들고, 각 TODO 제목에 근거 리뷰 코멘트 링크를 매핑해 추적 가능하게 함
+- 영향 파일: `skills/pr-notion-todo/SKILL.md`, `README.md`
 
 ### 2026-05-18 - 신규 추가: `ao-skill-update` 스킬 / `/ao-skill-update` 커맨드
 - 종류: 스킬 + 커맨드 (페어)
