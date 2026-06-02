@@ -3,7 +3,7 @@ name: pr-todo-notion
 description: GitHub PR을 분석해 Notion의 월별(또는 지정) 페이지 아래에 TODO 하위 페이지를 생성한다. 맨 위에 PR 링크를 달고, 각 TODO 항목 제목에 그 근거가 된 PR 리뷰 코멘트 링크를 매핑한다. 사용자가 "PR 보고 노션에 투두 만들어줘", "PR 리뷰를 노션 TODO로 정리", "이 PR 액션아이템 노션 페이지로" 같은 표현을 쓰면 발동.
 ---
 
-# pr-notion-todo
+# pr-todo-notion
 
 GitHub PR의 변경/리뷰 내용을 읽어 Notion 페이지 아래에 체크박스 TODO 페이지를 만든다.
 핵심 가치는 **추적 가능성**이다: 각 TODO가 "왜 필요한지"를 실제 PR 리뷰 코멘트 링크로 되짚을 수 있게 한다.
