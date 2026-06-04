@@ -16,7 +16,7 @@ description: ao-skills 레포의 스킬/커스텀 커맨드를 변경하고 Clau
    cp /Users/ujeonghyeon/Desktop/dev/ao-skills/commands/*.md ~/.claude/commands/
    ```
    삭제 작업이면 `~/.claude/` 쪽 파일을 별도로 `rm`.
-6. **커밋 + 푸시**: 한국어 conventional commits 스타일. `Co-Authored-By` 포함. 커밋 직후 자동 `git push`.
+6. **커밋 + 푸시**: 한국어 conventional commits 스타일. 서명 트레일러(Co-Authored-By 등) 없음. 커밋 직후 자동 `git push`.
 
 각 단계의 세부 형식(변경내역 항목, 커밋 메시지 prefix 등)은 `ao-skill-update` 스킬 정의를 따른다.
 

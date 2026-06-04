@@ -94,7 +94,7 @@ cp /Users/ujeonghyeon/Desktop/dev/ao-skills/commands/*.md ~/.claude/commands/
   - 삭제: `chore: <이름> 스킬/커맨드 제거`
   - 문서만: `docs: README 변경내역 갱신`
 - 본문에 무엇/왜 1~2줄
-- `Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>` 라인 포함
+- Co-Authored-By 등 서명 트레일러는 넣지 않는다 (전역 CLAUDE.md 규칙)
 - 커밋 직후 `git push` 자동 실행
 
 ## 절대 어기지 말 것
