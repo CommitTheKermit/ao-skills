@@ -1,12 +1,11 @@
 ---
-name: pr-todo-notion
-description: GitHub PR을 분석해 Notion의 "리뷰 TODO 리스트 모음"(또는 지정) 페이지 아래에 TODO 하위 페이지를 생성한다. 기존 노션 리뷰 TODO 페이지와 동일한 단순 체크박스 형식(헤더 1줄 + 체크박스 + 세부 근거)을 그대로 따른다. 사용자가 "PR 보고 노션에 투두 만들어줘", "PR 리뷰를 노션 TODO로 정리", "이 PR 액션아이템 노션 페이지로" 같은 표현을 쓰면 발동.
+description: GitHub PR을 분석해 Notion에 단순 체크박스 TODO 하위 페이지 생성
 ---
-
-# pr-todo-notion
 
 GitHub PR의 변경/리뷰 내용을 읽어 Notion 페이지 아래에 체크박스 TODO 페이지를 만든다.
 핵심 가치는 **기존 노션 리뷰 TODO 페이지와 똑같이 단순한 체크리스트**를 만드는 것이다. 군더더기(PR 링크 헤더, 메타 줄, 코멘트 링크, 파생 섹션, 후속 작업 섹션)를 넣지 않는다.
+
+`$ARGUMENTS`로 PR 번호/URL과 대상 노션 페이지가 오면 그것을 사용한다. 비어 있으면 사용자에게 PR과 대상 페이지를 묻는다.
 
 ## 산출물 형식 (고정)
 
@@ -81,3 +80,7 @@ gh api repos/<owner/repo>/pulls/<PR번호>/reviews --jq '.[] | {state, submitted
 
 - `gh` CLI (PR/코멘트 조회)
 - Notion MCP: `search`, `fetch`, `notion-create-pages`, `notion-update-page`
+
+---
+
+입력(PR 번호/URL, 대상 페이지): $ARGUMENTS

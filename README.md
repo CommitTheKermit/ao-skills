@@ -7,20 +7,17 @@ Claude Code에서 사용 중인 개인 스킬(Skill)과 슬래시 커맨드(Slas
 ```
 ao-skills/
 ├── skills/
-│   ├── socratic-learn/      # 소크라테스식 점진 학습 스킬
-│   │   └── SKILL.md
 │   ├── ao-skill-update/     # 스킬/커맨드 변경 워크플로우 스킬
 │   │   └── SKILL.md
-│   ├── pr-todo-notion/      # PR을 노션 TODO 페이지로 정리하는 스킬
+│   ├── claude-design-handoff/ # claude.ai/design 핸드오프 링크로 디자인 소스 최신화 스킬
 │   │   └── SKILL.md
-│   ├── stt-refine/          # STT 녹취록을 검수본·요약본으로 변환하는 스킬
-│   │   └── SKILL.md
-│   ├── session-handoff/     # 작업 세션 문맥을 다음 세션으로 넘기는 핸드오프 스킬
-│   │   └── SKILL.md
-│   └── claude-design-handoff/ # claude.ai/design 핸드오프 링크로 디자인 소스 최신화 스킬
+│   └── release-commit/      # 배포/릴리스 직후 release 커밋을 고정 포맷으로 작성하는 스킬
 │       └── SKILL.md
 └── commands/
-    ├── learn.md             # /learn - 학습 모드 진입
+    ├── learn.md             # /learn - 소크라테스식 학습 모드 진입
+    ├── session-handoff.md   # /session-handoff - 세션 문맥 핸드오프 산출물 생성
+    ├── stt-refine.md        # /stt-refine - STT 녹취록을 검수본·요약본으로 변환
+    ├── pr-todo-notion.md    # /pr-todo-notion - PR을 노션 체크박스 TODO로 정리
     ├── pr-description.md    # /pr-description - PR 디스크립션 작성
     ├── pr-review-answer.md  # /pr-review-answer - PR 리뷰 답변 작성
     └── ao-skill-update.md   # /ao-skill-update - 스킬/커맨드 변경+동기화+커밋+푸시
@@ -63,46 +60,43 @@ cp /path/to/ao-skills/commands/* .claude/commands/
 
 ## 스킬 목록
 
-### socratic-learn
-소크라테스식 점진 학습 도우미. 새 개념을 작은 단위로 분해 -> 코드/시각화로 설명 -> 확인 질문 -> 채점/교정 -> 다음 단계 선택의 사이클을 반복합니다.
-
-발동 표현: "X 학습 도와줘", "X 배우고 싶어", "X 개념부터 다시" 등.
+> 스킬은 `description`이 매 대화에 상시 로드되어 자동 발동을 판단한다. 그래서 "자동 발동이 핵심 가치"이거나 "레포 운영에 필수"인 것만 스킬로 둔다. 명시 호출이 자연스러운 기능은 커맨드로 둬서 상시 토큰을 아낀다.
 
 ### ao-skill-update
 이 레포의 스킬/커스텀 커맨드를 추가/수정/삭제한 뒤 `~/.claude/`로 동기화하고 커밋과 푸시까지 자동 처리하는 워크플로우.
 
 발동 표현: "스킬 만들자", "스킬 수정", "커맨드 추가", "커맨드 변경", "스킬 동기화" 등.
 
-### pr-todo-notion
-GitHub PR을 분석해 Notion "리뷰 TODO 리스트 모음"(또는 지정) 페이지 아래에 체크박스 TODO 하위 페이지를 만든다. 기존 노션 리뷰 TODO 페이지와 동일한 단순 형식(헤더 1줄 + 체크박스 + 세부 근거)을 따른다. PR 링크/메타/코멘트 링크/파생·후속 섹션은 넣지 않는다.
-
-발동 표현: "PR 보고 노션에 투두 만들어줘", "PR 리뷰를 노션 TODO로 정리", "이 PR 액션아이템 노션 페이지로" 등.
-
-### stt-refine
-STT(Speech-to-Text) 녹취 텍스트를 검수본(음성 인식 오류·끊긴 문장·화자 분리 보정)과 요약본(토픽별 재구성) 두 개의 마크다운 파일로 변환한다. 연속 회차 통합본 작성도 지원한다.
-
-발동 표현: "검수해줘", "요약해줘", "녹취록 정리", "회의록 만들어줘", "STT 다듬어줘", "통합본 만들어줘" 등.
-
-### session-handoff
-현재 작업 세션의 문맥을 다음 세션으로 넘기기 위해 두 산출물을 만든다 - (1) 새 세션 첫 메시지로 붙여넣을 핸드오프 프롬프트, (2) 저장소 루트의 `HANDOFF.md`. 확정된 결정/재사용 코어/다음 할 일을 사실 위주로 압축해, 다음 세션이 추가 탐색 없이 이어가게 한다.
-
-발동 표현: "핸드오프 만들어줘", "다음 세션 프롬프트", "세션 넘길 문맥 정리", "HANDOFF 만들어줘", "새 세션에서 이어서" 등.
-
 ### claude-design-handoff
 claude.ai/design 핸드오프 링크(`api.anthropic.com/v1/design/...`)를 받아 디자인 번들을 내려받고(gzip bin → gunzip+tar 압축해제), 번들의 README와 prod 산출물(`app-prod.jsx`/`styles-prod.css` 등)·`chats/` 트랜스크립트를 근거로 프로젝트의 디자인 소스를 시안과 정확히 동기화한다. 텍스트 설명만으로 추측 구현하지 않는다. 함께 온 구체적 변경 지시도 추가 반영.
 
 발동 표현: "Fetch this design file, read its readme, and implement..." 형식 또는 `api.anthropic.com/v1/design/` 링크 붙여넣기.
+
+### release-commit
+배포/릴리스 직후 남기는 release 커밋을 고정 포맷(`chore(release): vX.Y.Z 배포`)으로 작성한다. 직전 release 이후의 `git log`를 뽑아 변경 목록·배포 대상·버전 증감을 본문에 채워, 요약 한두 줄로 끝나 추적이 안 되는 빈약한 release 커밋을 막는다.
+
+발동 표현: "release 커밋", "버전 커밋", "릴리스 커밋", "배포 커밋 정리" 등.
 
 ## 커맨드 목록
 
 | 커맨드 | 설명 |
 |--------|------|
 | `/learn` | 소크라테스식 점진 학습 모드 진입 |
+| `/session-handoff` | 작업 세션 문맥을 핸드오프 프롬프트 + `handoff.md`로 정리 |
+| `/stt-refine` | STT 녹취록을 검수본·요약본 두 마크다운으로 변환 (통합본 포함) |
+| `/pr-todo-notion` | GitHub PR을 Notion 단순 체크박스 TODO 페이지로 정리 |
 | `/pr-description` | PR 디스크립션을 정해진 형식으로 작성 |
 | `/pr-review-answer` | PR 리뷰 코멘트 질문에 대한 답변을 정해진 형식으로 작성 |
 | `/ao-skill-update` | 스킬/커맨드 변경 + 전역 동기화 + 커밋 + 푸시 |
 
 ## 최근 변경내역
+
+### 2026-06-10 - `socratic-learn`/`session-handoff`/`stt-refine`/`pr-todo-notion` 스킬 → 커맨드 전환
+- 기존: 4개 기능이 스킬로 존재해 자동 발동용 `description`(167~366자)이 매 대화 상시 로드됨
+- 변경: 4개를 커스텀 커맨드(`/session-handoff`, `/stt-refine`, `/pr-todo-notion`, 기존 `/learn`)로 이전하고 스킬은 삭제. `learn.md`는 `socratic-learn` 참조를 제거해 자족화
+- 이유: 스킬은 자동 발동 판단을 위해 긴 description을 상시 로드하지만, 이 4개는 사용자가 명시 호출(`/명령`)하는 게 자연스러워 자동 발동 이득이 작음. 커맨드는 짧은 한 줄 description으로 충분해 상시 토큰을 절감 (자동 발동은 포기)
+- 유지: `ao-skill-update`(레포 운영 필수), `claude-design-handoff`(링크 붙여넣기 자동 발동이 핵심), `release-commit`은 스킬로 유지
+- 영향 파일: `commands/learn.md`, `commands/session-handoff.md`(신규), `commands/stt-refine.md`(신규), `commands/pr-todo-notion.md`(신규), `skills/{socratic-learn,session-handoff,stt-refine,pr-todo-notion}/`(삭제), `README.md`
 
 ### 2026-06-09 - 신규 추가: `release-commit` 스킬
 - 종류: 스킬
