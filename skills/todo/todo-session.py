@@ -200,7 +200,9 @@ def run_start(payload):
     parts.append(
         "TODO 관리: 사용자가 자연어로 '~ todo에 추가/완료'라고 하면 해당 파일의 "
         "'- [ ]'/'- [x]' 항목을 직접 편집하세요. 전역=~/.claude/todo.md, "
-        "프로젝트=<project>/.claude/todo.md. 완료 항목은 세션 시작/종료 시 자동 아카이브됩니다."
+        "프로젝트=<project>/.claude/todo.md. 완료 항목은 세션 시작/종료 시 자동 아카이브됩니다. "
+        "항목 끝의 (ctx: ...) 는 그 투두의 문맥 파일 경로(todo.md 와 같은 디렉터리 기준)입니다. "
+        "해당 투두를 작업할 때 먼저 읽으세요."
     )
     context = "\n\n".join(parts)
 
