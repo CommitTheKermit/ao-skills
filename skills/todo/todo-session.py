@@ -2,17 +2,29 @@
 """세션 시작/종료 시 TODO 를 관리하는 Claude Code 훅 스크립트.
 
 사용법:
-    todo-session.py start   # SessionStart 훅: 완료 항목 아카이브 + 미완료 항목을 context 로 노출
+    todo-session.py start   # SessionStart 훅: 완료 항목 아카이브 + 현재 프로젝트/공통 미완료 항목을 context 로 노출
     todo-session.py end     # SessionEnd 훅: 완료 항목 아카이브만 수행
 
 대상 파일:
-    - 전역  : ~/.claude/todo.md
-    - 프로젝트: <project>/.claude/todo.md
+    - 전역 단일 파일: ~/.claude/todo.md  (모든 항목이 여기 한 곳에 저장된다)
+
+파일 구조:
+    # TODO
+
+    ## 공통
+    - [ ] 어디서나 보이는 항목
+
+    ## /절대/프로젝트/경로
+    - [ ] 그 프로젝트에서만 보이는 항목
+
+    ## Done (archive)
+    - [x] 지난 완료 항목  (archived YYYY-MM-DD)
 
 설계 원칙:
     - 훅이 세션을 막으면 안 되므로 어떤 예외에도 exit 0 으로 끝낸다.
     - 완료(- [x]) 항목은 삭제하지 않고 "## Done (archive)" 섹션으로 이동한다.
-    - 세션 시작 출력에는 미완료(- [ ]) 항목만 보여준다.
+    - 세션 시작 출력에는 '공통' 섹션 + 현재 cwd 프로젝트 섹션의 미완료(- [ ]) 항목만 보여준다.
+    - 헤더 없는 머리말 영역의 항목은 '공통' 으로 취급한다(구버전 호환).
     - 마지막 접속 후 임계값(기본 1시간)을 넘으면 경과 시간 안내 한 줄을 덧붙인다.
 """
 
@@ -20,10 +32,11 @@ import sys
 import os
 import json
 import time
-from datetime import date, datetime
+from datetime import date
 
 THRESHOLD_SECONDS = 3600  # "오랜만" 강조 임계값: 1시간
 ARCHIVE_HEADER = "## Done (archive)"
+COMMON_KEY = "공통"
 
 
 def _read_payload():
@@ -43,15 +56,8 @@ def _project_dir(payload):
     )
 
 
-def _todo_targets(payload):
-    home = os.path.expanduser("~")
-    global_todo = os.path.join(home, ".claude", "todo.md")
-    project_todo = os.path.join(_project_dir(payload), ".claude", "todo.md")
-    targets = [("전역", global_todo)]
-    # 프로젝트 todo 가 전역과 동일 경로면 중복 제거
-    if os.path.abspath(project_todo) != os.path.abspath(global_todo):
-        targets.append(("프로젝트", project_todo))
-    return targets
+def _global_todo():
+    return os.path.join(os.path.expanduser("~"), ".claude", "todo.md")
 
 
 def _split_active_archive(lines):
@@ -60,6 +66,48 @@ def _split_active_archive(lines):
         if line.strip() == ARCHIVE_HEADER:
             return lines[:i], lines[i + 1:]
     return lines, None
+
+
+def _parse_sections(active_lines):
+    """활성 라인을 [(header, body_lines)] 로 분리한다.
+
+    header 는 '## ' 다음의 문자열. 첫 머리말(헤더 이전)은 header=None.
+    """
+    sections = []
+    header = None
+    body = []
+    for line in active_lines:
+        if line.startswith("## "):
+            sections.append((header, body))
+            header = line[3:].strip()
+            body = []
+        else:
+            body.append(line)
+    sections.append((header, body))
+    return sections
+
+
+def _is_common(header):
+    return header is None or header == COMMON_KEY
+
+
+def _has_checkbox(body):
+    return any(l.lstrip().startswith(("- [ ]", "- [x]", "- [X]")) for l in body)
+
+
+def _prune_empty_project_sections(active_lines):
+    """항목이 하나도 없는 프로젝트 섹션(헤더만 남은 것)을 제거한다.
+
+    '공통' 섹션과 머리말(header=None)은 비어 있어도 유지한다.
+    """
+    out = []
+    for header, body in _parse_sections(active_lines):
+        if not _is_common(header) and not _has_checkbox(body):
+            continue
+        if header is not None:
+            out.append(f"## {header}")
+        out.extend(body)
+    return out
 
 
 def archive_completed(path):
@@ -89,6 +137,9 @@ def archive_completed(path):
     if not moved:
         return  # 변경 없음 - 파일을 건드리지 않는다
 
+    # 완료 항목이 빠져 헤더만 남은 프로젝트 섹션 정리
+    kept = _prune_empty_project_sections(kept)
+
     # 활성 영역 끝의 빈 줄 정리
     while kept and kept[-1].strip() == "":
         kept.pop()
@@ -111,8 +162,8 @@ def archive_completed(path):
         return
 
 
-def read_incomplete(path):
-    """활성 영역의 미완료(- [ ]) 항목 라인을 반환한다."""
+def collect_display(path, cwd_abs):
+    """표시 대상(공통 + 현재 프로젝트)의 미완료 항목을 [(라벨, [items])] 로 반환한다."""
     if not os.path.isfile(path):
         return []
     try:
@@ -120,13 +171,31 @@ def read_incomplete(path):
             lines = f.read().splitlines()
     except Exception:
         return []
+
     active, _ = _split_active_archive(lines)
-    items = []
-    for line in active:
-        stripped = line.lstrip()
-        if stripped.startswith("- [ ]"):
-            items.append(stripped)
-    return items
+    common_items = []
+    project_items = []
+    for header, body in _parse_sections(active):
+        items = [l.lstrip() for l in body if l.lstrip().startswith("- [ ]")]
+        if not items:
+            continue
+        if _is_common(header):
+            common_items.extend(items)
+        else:
+            try:
+                same = os.path.abspath(header) == cwd_abs
+            except Exception:
+                same = False
+            if same:
+                project_items.extend(items)
+
+    result = []
+    if common_items:
+        result.append((COMMON_KEY, common_items))
+    if project_items:
+        label = os.path.basename(cwd_abs.rstrip("/")) or cwd_abs
+        result.append((label, project_items))
+    return result
 
 
 def _last_access_path():
@@ -163,11 +232,10 @@ def _format_elapsed(seconds):
 
 
 def run_start(payload):
-    targets = _todo_targets(payload)
+    path = _global_todo()
 
     # 1) 완료 항목 아카이브
-    for _, path in targets:
-        archive_completed(path)
+    archive_completed(path)
 
     # 2) 경과 시간 계산 (아카이브 후, last-access 갱신 전)
     now = time.time()
@@ -177,15 +245,10 @@ def run_start(payload):
         elapsed_note = f"마지막 접속으로부터 {_format_elapsed(now - last)} 경과"
     _write_last_access(now)
 
-    # 3) 미완료 항목 수집
-    sections = []
-    total = 0
-    for label, path in targets:
-        items = read_incomplete(path)
-        total += len(items)
-        if items:
-            body = "\n".join(items)
-            sections.append(f"[{label}] ({path})\n{body}")
+    # 3) 표시 대상(공통 + 현재 프로젝트) 미완료 항목 수집
+    cwd_abs = os.path.abspath(_project_dir(payload))
+    display = collect_display(path, cwd_abs)
+    total = sum(len(items) for _, items in display)
 
     if total == 0 and elapsed_note is None:
         return  # 보여줄 것 없음 - 조용히 종료
@@ -193,16 +256,19 @@ def run_start(payload):
     parts = ["저장된 TODO 목록입니다. 세션을 시작하며 사용자에게 아래 내용을 보기 좋게 안내하세요."]
     if elapsed_note:
         parts.append(f"⏰ {elapsed_note}")
-    if sections:
-        parts.append("\n\n".join(sections))
+    if display:
+        blocks = []
+        for label, items in display:
+            blocks.append(f"[{label}]\n" + "\n".join(items))
+        parts.append("\n\n".join(blocks))
     else:
-        parts.append("(미완료 TODO 없음)")
+        parts.append("(현재 프로젝트/공통 미완료 TODO 없음)")
     parts.append(
-        "TODO 관리: 사용자가 자연어로 '~ todo에 추가/완료'라고 하면 해당 파일의 "
-        "'- [ ]'/'- [x]' 항목을 직접 편집하세요. 전역=~/.claude/todo.md, "
-        "프로젝트=<project>/.claude/todo.md. 완료 항목은 세션 시작/종료 시 자동 아카이브됩니다. "
-        "항목 끝의 (ctx: ...) 는 그 투두의 문맥 파일 경로(todo.md 와 같은 디렉터리 기준)입니다. "
-        "해당 투두를 작업할 때 먼저 읽으세요."
+        "TODO 관리: 모든 항목은 전역 ~/.claude/todo.md 한 파일에 저장되며 "
+        "'## 공통' 과 '## <프로젝트 절대경로>' 섹션으로 분류됩니다. 추가 기본값은 현재 "
+        "프로젝트 섹션이고, '공통/전역'이라고 하면 공통 섹션에 넣습니다. 완료(- [x])는 "
+        "세션 시작/종료 시 자동 아카이브됩니다. 항목 끝의 (ctx: ...) 는 그 투두의 문맥 파일 "
+        "경로(~/.claude/todo-context/ 기준)입니다. 해당 투두를 작업할 때 먼저 읽으세요."
     )
     context = "\n\n".join(parts)
 
@@ -216,8 +282,7 @@ def run_start(payload):
 
 
 def run_end(payload):
-    for _, path in _todo_targets(payload):
-        archive_completed(path)
+    archive_completed(_global_todo())
     _write_last_access(time.time())
 
 
