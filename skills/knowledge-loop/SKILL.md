@@ -14,7 +14,17 @@ Hermes Agent 패턴의 변형. **추출은 자동(SessionEnd 훅), 승격은 수
 - `pending.md`: 훅이 적재하는 지식 후보 (memory, 주기적으로 비움)
 - `docs/`: 승격된 영구 지식 문서 (knowledge)
 - `archive.md`: 처리 완료된 후보 이력
-- `extract.log`: 추출 훅 에러 로그
+- `extract.log`: 추출 훅 실행 로그 (`rc`=claude 종료코드, `new`=직전 추출 이후 새 메시지 수)
+- `.extract-state`: 세션별 처리 위치(high-water mark). 재추출 중복 차단용
+- `.nudge-stamp`: 승격 넛지 마지막 안내 시각. 쿨다운용
+
+## 자동화 (훅)
+
+- **추출 (SessionEnd, `knowledge-extract.sh`)**: 게이트(직전 추출 이후 새 사람 메시지 ≥5 + 교정/커밋/긴 세션 신호) 통과 시 haiku 로 0~3개 후보 추출.
+  - 같은 세션이 SessionEnd마다 재추출돼 동일 지식이 중복 적재되지 않도록 `.extract-state` 의 high-water mark 이후 **새 메시지만** 샘플링한다.
+  - 거대 붙여넣기(HTML/스킬 번들/명령 출력)는 샘플에서 제외하고 메시지당 2000자로 캡해, 대화성 신호가 묻히지 않게 한다.
+  - claude 호출 실패(rc≠0)나 불릿(`- `)이 아닌 출력(에러 문자열 등)은 적재하지 않는다.
+- **승격 넛지 (SessionStart, `knowledge-nudge.sh`)**: `pending.md` 가 8개 세션 분량 이상 쌓이면 3일 쿨다운으로 `/knowledge-loop` 리뷰를 권한다. 수동 승격이 잊혀 후보만 쌓이는 것을 막는다.
 
 ## 리뷰 워크플로우
 
