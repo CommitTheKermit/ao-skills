@@ -1,5 +1,6 @@
 ---
 description: PR 리뷰 코멘트 질문에 대한 답변을 정해진 형식으로 작성
+disable-model-invocation: true
 ---
 
 PR 리뷰 코멘트에 대해 "이건 무슨 뜻이야?", "어떻게 고쳐야 해?" 같은 질문을 받았을 때 아래 구조를 따라 답한다.

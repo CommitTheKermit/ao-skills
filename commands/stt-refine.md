@@ -1,5 +1,6 @@
 ---
 description: STT 녹취록을 검수본·요약본 두 마크다운으로 변환 (연속 회차 통합본 포함)
+disable-model-invocation: true
 ---
 
 STT(Speech-to-Text) 도구(다글로(Daglo), 클로바, 맥북 녹음 등)에서 추출된 녹취 텍스트를 **검수본**과 **요약본** 두 개의 마크다운 파일로 변환한다.

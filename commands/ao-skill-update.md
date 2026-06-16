@@ -1,5 +1,6 @@
 ---
 description: ao-skills 레포의 스킬/커스텀 커맨드를 변경하고 Claude 전역 설정으로 동기화, 커밋+푸시까지 자동 완료
+disable-model-invocation: true
 ---
 
 `ao-skill-update` 스킬의 워크플로우를 따른다.

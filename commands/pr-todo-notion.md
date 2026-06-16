@@ -1,5 +1,6 @@
 ---
 description: GitHub PR을 분석해 Notion에 단순 체크박스 TODO 하위 페이지 생성
+disable-model-invocation: true
 ---
 
 GitHub PR의 변경/리뷰 내용을 읽어 Notion 페이지 아래에 체크박스 TODO 페이지를 만든다.

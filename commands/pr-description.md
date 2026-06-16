@@ -1,5 +1,6 @@
 ---
 description: PR 디스크립션을 정해진 형식으로 작성
+disable-model-invocation: true
 ---
 
 PR 디스크립션을 작성한다. 아래 구조를 따른다.
