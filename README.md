@@ -106,7 +106,7 @@ claude.ai/design export(핸드오프) CSS 를 옮길 때 빌드·`tsc`·`vitest`
 발동 표현: "release 커밋", "버전 커밋", "릴리스 커밋", "배포 커밋 정리" 등.
 
 ### todo
-프로젝트별/전역 TODO 를 등록·완료·조회·삭제하고, 항목별 문맥 파일(`todo-context/<슬러그>.md`)을 `(ctx: ...)` 링크로 연결한다. 세션 시작 시 자동 표시되는 `.claude/todo.md`(프로젝트)·`~/.claude/todo.md`(전역) 를 체크리스트 포맷으로 직접 편집한다. 표시/아카이브는 번들된 `todo-session.py` 훅이 SessionStart/SessionEnd 에서 처리하고, 스킬은 항목·문맥 편집만 담당한다.
+프로젝트별/전역 TODO 를 등록·완료·조회·삭제하고, 항목별 문맥 파일(`todo-context/<슬러그>.md`)을 `(ctx: ...)` 링크로 연결한다. 세션 시작 시 자동 표시되는 전역 `~/.claude/todo.md` 를 `## 공통`/`## <프로젝트 절대경로>` 섹션 체크리스트 포맷으로 직접 편집한다. 완료 항목은 원래 프로젝트 섹션에 그대로 남고(프로젝트별 구분 유지), 미완료 표시·완료 날짜 스탬프는 번들된 `todo-session.py` 훅이 SessionStart/SessionEnd 에서 처리하며, 스킬은 항목·문맥 편집만 담당한다.
 
 발동 표현: "todo/투두 추가", "할 일 등록", "todo/투두 완료/체크", "todo/투두 목록", "/todo" 등.
 
@@ -125,6 +125,12 @@ claude.ai/design export(핸드오프) CSS 를 옮길 때 빌드·`tsc`·`vitest`
 ## 최근 변경내역 (2026-W25)
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 의 주차별 파일 참조. (주가 바뀌면 이 섹션 항목을 `changelog/<직전 주차>.md`로 옮긴다.)
+
+### 2026-06-18 - `todo` 완료 항목을 프로젝트 섹션 내 유지(아카이브 프로젝트별 구분)
+- 기존: 완료(- [x]) 항목을 훅이 `## Done (archive)` 로 이동해, 출처 프로젝트 정보를 버리고 구분 없이 평평하게 한 덩어리로 쌓음. "어느 프로젝트의 완료인지" 추적 불가
+- 변경: 완료 항목을 옮기지 않고 원래 프로젝트 섹션에 `(done YYYY-MM-DD)` 날짜 스탬프만 붙여 그대로 유지(프로젝트별 구분 자동 유지). 별도 아카이브로의 이동 폐지. 과거 이미 flat 하게 쌓인 아카이브 항목(출처 불명)은 1회 `### (미분류)` 하위섹션으로 묶어 보존. `process_todo`(구 `archive_completed`)·`_stamp_completed`·`_migrate_legacy_archive` 로 훅 재구성하고 SessionStart 안내문·SKILL.md 포맷/동작/주의 모두 반영
+- 이유: 사용자가 완료 내역을 프로젝트별로 보고 싶어 함. 이동 대신 제자리 스탬프가 구분을 가장 단순하게 유지
+- 영향 파일: `skills/todo/todo-session.py`, `skills/todo/SKILL.md`, `README.md`
 
 ### 2026-06-18 - `claude-design-handoff` 에 적용 후 CSS 가드 검증 단계 추가
 - 기존: 디자인 소스 동기화·Implement 반영 후 곧장 커밋. CSS 잠복 버그(주석 별표+슬래시 조기종료 등) 검증 단계가 없었다

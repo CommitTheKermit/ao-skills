@@ -2,8 +2,8 @@
 """세션 시작/종료 시 TODO 를 관리하는 Claude Code 훅 스크립트.
 
 사용법:
-    todo-session.py start   # SessionStart 훅: 완료 항목 아카이브 + 현재 프로젝트/공통 미완료 항목을 context 로 노출
-    todo-session.py end     # SessionEnd 훅: 완료 항목 아카이브만 수행
+    todo-session.py start   # SessionStart 훅: 완료 항목 날짜 스탬프 + 현재 프로젝트/공통 미완료 항목을 context 로 노출
+    todo-session.py end     # SessionEnd 훅: 완료 항목 날짜 스탬프만 수행
 
 대상 파일:
     - 전역 단일 파일: ~/.claude/todo.md  (모든 항목이 여기 한 곳에 저장된다)
@@ -16,13 +16,19 @@
 
     ## /절대/프로젝트/경로
     - [ ] 그 프로젝트에서만 보이는 항목
+    - [x] 완료 항목  (done YYYY-MM-DD)   <- 완료해도 이 섹션에 그대로 남는다
 
-    ## Done (archive)
+    ## Done (archive)                    <- 과거 평평하게 쌓였던 완료 항목의 레거시 보관소
+    ### (미분류)
     - [x] 지난 완료 항목  (archived YYYY-MM-DD)
 
 설계 원칙:
     - 훅이 세션을 막으면 안 되므로 어떤 예외에도 exit 0 으로 끝낸다.
-    - 완료(- [x]) 항목은 삭제하지 않고 "## Done (archive)" 섹션으로 이동한다.
+    - 완료(- [x]) 항목은 옮기지 않는다. 원래 프로젝트 섹션에 그대로 두고
+      (done YYYY-MM-DD) 날짜 스탬프만 한 번 붙인다(프로젝트별 구분이 그대로 유지됨).
+    - "## Done (archive)" 는 과거 flat 아카이브의 레거시 보관소다. 새 완료는 여기로
+      이동하지 않는다. 헤더 없이 평평하게 쌓여 있던 기존 항목은 한 번 "### (미분류)"
+      하위섹션으로 묶어 보존한다.
     - 세션 시작 출력에는 '공통' 섹션 + 현재 cwd 프로젝트 섹션의 미완료(- [ ]) 항목만 보여준다.
     - 헤더 없는 머리말 영역의 항목은 '공통' 으로 취급한다(구버전 호환).
     - 마지막 접속 후 임계값(기본 1시간)을 넘으면 경과 시간 안내 한 줄을 덧붙인다.
@@ -36,6 +42,7 @@ from datetime import date
 
 THRESHOLD_SECONDS = 3600  # "오랜만" 강조 임계값: 1시간
 ARCHIVE_HEADER = "## Done (archive)"
+UNCLASSIFIED_HEADER = "### (미분류)"
 COMMON_KEY = "공통"
 
 
@@ -61,7 +68,10 @@ def _global_todo():
 
 
 def _split_active_archive(lines):
-    """라인들을 (활성 영역, 아카이브 영역) 으로 나눈다."""
+    """라인들을 (활성 영역, 아카이브 영역) 으로 나눈다.
+
+    아카이브 영역은 "## Done (archive)" 헤더 **다음** 라인들. 헤더가 없으면 두 번째 값은 None.
+    """
     for i, line in enumerate(lines):
         if line.strip() == ARCHIVE_HEADER:
             return lines[:i], lines[i + 1:]
@@ -91,27 +101,49 @@ def _is_common(header):
     return header is None or header == COMMON_KEY
 
 
-def _has_checkbox(body):
-    return any(l.lstrip().startswith(("- [ ]", "- [x]", "- [X]")) for l in body)
+def _stamp_completed(active_lines, today):
+    """활성 영역의 완료(- [x]) 항목 중 날짜 스탬프가 없는 것에 (done DATE) 를 붙인다.
 
-
-def _prune_empty_project_sections(active_lines):
-    """항목이 하나도 없는 프로젝트 섹션(헤더만 남은 것)을 제거한다.
-
-    '공통' 섹션과 머리말(header=None)은 비어 있어도 유지한다.
+    이미 (done ...) 또는 (archived ...) 가 붙어 있으면 건드리지 않는다(중복 방지).
     """
     out = []
-    for header, body in _parse_sections(active_lines):
-        if not _is_common(header) and not _has_checkbox(body):
-            continue
-        if header is not None:
-            out.append(f"## {header}")
-        out.extend(body)
-    return out
+    changed = False
+    for line in active_lines:
+        stripped = line.lstrip()
+        if (
+            (stripped.startswith("- [x]") or stripped.startswith("- [X]"))
+            and "(done " not in line
+            and "(archived " not in line
+        ):
+            out.append(f"{line.rstrip()}  (done {today})")
+            changed = True
+        else:
+            out.append(line)
+    return out, changed
 
 
-def archive_completed(path):
-    """완료(- [x]) 항목을 활성 영역에서 아카이브 영역으로 이동한다."""
+def _migrate_legacy_archive(archive_lines):
+    """레거시 flat 아카이브 항목을 한 번 '### (미분류)' 하위섹션으로 묶는다.
+
+    이미 어떤 '### ' 하위섹션이 있으면(이미 마이그레이션됨) 건드리지 않는다.
+    """
+    if any(l.startswith("### ") for l in archive_lines):
+        return archive_lines, False
+    if not any(
+        l.lstrip().startswith(("- [ ]", "- [x]", "- [X]")) for l in archive_lines
+    ):
+        return archive_lines, False  # 묶을 항목이 없음
+    body = list(archive_lines)
+    while body and body[0].strip() == "":
+        body.pop(0)
+    return ["", UNCLASSIFIED_HEADER, ""] + body, True
+
+
+def process_todo(path):
+    """완료 항목 날짜 스탬프 + 레거시 아카이브 1회 마이그레이션.
+
+    완료 항목은 옮기지 않고 원래 섹션에 그대로 둔다. 변경이 있을 때만 파일을 재작성한다.
+    """
     if not os.path.isfile(path):
         return
     try:
@@ -121,43 +153,27 @@ def archive_completed(path):
         return
 
     active, archive = _split_active_archive(lines)
-    if archive is None:
-        archive = []
-
     today = date.today().isoformat()
-    moved = []
-    kept = []
-    for line in active:
-        stripped = line.lstrip()
-        if stripped.startswith("- [x]") or stripped.startswith("- [X]"):
-            moved.append(f"{line.rstrip()}  (archived {today})")
-        else:
-            kept.append(line)
 
-    if not moved:
+    active, stamped = _stamp_completed(active, today)
+    migrated = False
+    if archive is not None:
+        archive, migrated = _migrate_legacy_archive(archive)
+
+    if not (stamped or migrated):
         return  # 변경 없음 - 파일을 건드리지 않는다
 
-    # 완료 항목이 빠져 헤더만 남은 프로젝트 섹션 정리
-    kept = _prune_empty_project_sections(kept)
-
-    # 활성 영역 끝의 빈 줄 정리
-    while kept and kept[-1].strip() == "":
-        kept.pop()
-
-    new_lines = list(kept)
-    new_lines.append("")
-    new_lines.append(ARCHIVE_HEADER)
-    new_lines.append("")
-    # 기존 아카이브의 선두 빈 줄 제거 후 합치기
-    archive_body = [l for l in archive]
-    while archive_body and archive_body[0].strip() == "":
-        archive_body.pop(0)
-    new_lines.extend(moved)
-    new_lines.extend(archive_body)
+    out = list(active)
+    while out and out[-1].strip() == "":
+        out.pop()
+    if archive is not None:
+        out.append("")
+        out.append(ARCHIVE_HEADER)
+        out.extend(archive)
 
     try:
         with open(path, "w", encoding="utf-8") as f:
-            f.write("\n".join(new_lines).rstrip() + "\n")
+            f.write("\n".join(out).rstrip() + "\n")
     except Exception:
         return
 
@@ -234,10 +250,10 @@ def _format_elapsed(seconds):
 def run_start(payload):
     path = _global_todo()
 
-    # 1) 완료 항목 아카이브
-    archive_completed(path)
+    # 1) 완료 항목 날짜 스탬프 + 레거시 아카이브 마이그레이션
+    process_todo(path)
 
-    # 2) 경과 시간 계산 (아카이브 후, last-access 갱신 전)
+    # 2) 경과 시간 계산 (처리 후, last-access 갱신 전)
     now = time.time()
     last = _read_last_access()
     elapsed_note = None
@@ -266,9 +282,10 @@ def run_start(payload):
     parts.append(
         "TODO 관리: 모든 항목은 전역 ~/.claude/todo.md 한 파일에 저장되며 "
         "'## 공통' 과 '## <프로젝트 절대경로>' 섹션으로 분류됩니다. 추가 기본값은 현재 "
-        "프로젝트 섹션이고, '공통/전역'이라고 하면 공통 섹션에 넣습니다. 완료(- [x])는 "
-        "세션 시작/종료 시 자동 아카이브됩니다. 항목 끝의 (ctx: ...) 는 그 투두의 문맥 파일 "
-        "경로(~/.claude/todo-context/ 기준)입니다. 해당 투두를 작업할 때 먼저 읽으세요."
+        "프로젝트 섹션이고, '공통/전역'이라고 하면 공통 섹션에 넣습니다. 완료(- [x]) 항목은 "
+        "원래 프로젝트 섹션에 그대로 남고(별도 아카이브로 이동하지 않음), 세션 시작/종료 시 "
+        "완료 날짜((done ...))가 자동으로 기록됩니다. 항목 끝의 (ctx: ...) 는 그 투두의 문맥 "
+        "파일 경로(~/.claude/todo-context/ 기준)입니다. 해당 투두를 작업할 때 먼저 읽으세요."
     )
     parts.append(
         "완료 자동 제안: 사용자가 '완료'라고 말하지 않아도, 이번 프롬프트로 시작한 작업이 "
@@ -289,7 +306,7 @@ def run_start(payload):
 
 
 def run_end(payload):
-    archive_completed(_global_todo())
+    process_todo(_global_todo())
     _write_last_access(time.time())
 
 
