@@ -126,6 +126,18 @@ claude.ai/design export(핸드오프) CSS 를 옮길 때 빌드·`tsc`·`vitest`
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 의 주차별 파일 참조. (주가 바뀌면 이 섹션 항목을 `changelog/<직전 주차>.md`로 옮긴다.)
 
+### 2026-06-18 - `claude-design-handoff` 에 적용 후 CSS 가드 검증 단계 추가
+- 기존: 디자인 소스 동기화·Implement 반영 후 곧장 커밋. CSS 잠복 버그(주석 별표+슬래시 조기종료 등) 검증 단계가 없었다
+- 변경: 단계 7 "핸드오프 CSS 가드로 검증" 추가 - 하네스 설치 프로젝트면 `npm run validate-handoff`, 미설치면 `handoff-css-guard` 설치 제안, stale 은 `--live` 대조. 다이어그램·"절대 어기지 말 것"에도 명문화
+- 이유: 이 스킬이 손 동기화로 바로 그 잠복 버그를 만들 수 있어, 적용→검증 루프를 닫는다
+- 영향 파일: `skills/claude-design-handoff/SKILL.md`
+
+### 2026-06-18 - `ao-skill-update` 에 하네스(설치형 스킬) 분류 + 재전파 추가
+- 기존: 변경 분류가 스킬/커맨드 두 형태뿐. 프로젝트로 복사 설치되는 하네스의 "사본 stale" 라이프사이클을 다루지 않았다
+- 변경: "하네스(설치형 스킬) 분류" 절 추가 - 동기화 흐름은 일반 스킬과 동일하되 `assets/` 변경 시 설치된 프로젝트 사본이 stale 해지므로, 종료 보고에 재전파 안내를 남기고 사용자가 지목하면 캐논으로 덮어 재전파. "절대 어기지 말 것"·"종료 시 보고"에도 반영
+- 이유: `handoff-css-guard` 같은 하네스가 늘 때 별도 `ao-harness-update` 신설(워크플로 중복+상시 토큰) 대신 ao-skill-update 하나로 흡수
+- 영향 파일: `skills/ao-skill-update/SKILL.md`
+
 ### 2026-06-18 - 신규 추가: `handoff-css-guard` (핸드오프 CSS 검증 하네스 설치)
 - 종류: 스킬 (assets 번들: `css-guard.mjs`/`validate-handoff.mjs`/`css-guard.sh`/`stylelintrc.json`)
 - 목적: claude.ai/design export CSS 적용 시 빌드/`tsc`/`vitest` 가 못 잡는 "문법상 valid 인데 규칙이 통째로 죽는" 잠복 버그(주석 안 별표+슬래시 조기종료)·누락 CSS 변수·클래스 셀렉터 불일치·stale 번들을 잡는 자동화 가드를 대상 프로젝트에 설치. 편집 즉시 PostToolUse 훅(구문+누락변수, block) + 수동 `npm run validate-handoff`(+stylelint·셀렉터 리포트·stale `--live` diff)
