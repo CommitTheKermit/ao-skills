@@ -110,6 +110,11 @@ claude.ai/design export(핸드오프) CSS 를 옮길 때 빌드·`tsc`·`vitest`
 
 발동 표현: "todo/투두 추가", "할 일 등록", "todo/투두 완료/체크", "todo/투두 목록", "/todo" 등.
 
+### yfix
+버그/문제를 곧장 고치지 않고, 먼저 ① 코드를 실제 조사해 "왜 이렇게 동작하는지" 근본 원인을 근거(`파일:라인`)와 함께 설명하고, ② 가능한 해결책 후보들(개수 유동적)을 트레이드오프 표로 비교한 뒤, ③ `AskUserQuestion` 으로 어느 방향으로 고칠지 사용자에게 묻는다. 책임 경계는 **원인 설명 + 비교 + 선택 질문**까지이고, 실제 코드 수정은 스킬 밖 일반 흐름에서 진행한다(분석 단계에선 읽기만). 자명한 오타류는 절차 생략, 원인이 애매하거나 해법이 갈릴 때만 발동.
+
+발동 표현: "/yfix", "왜 이렇게 동작해", "이거 왜 안 돼", "버그 고쳐줘", "어떻게 고칠지 비교해줘" 등.
+
 ## 커맨드 목록
 
 | 커맨드 | 설명 |
@@ -122,78 +127,18 @@ claude.ai/design export(핸드오프) CSS 를 옮길 때 빌드·`tsc`·`vitest`
 | `/pr-review-answer` | PR 리뷰 코멘트 질문에 대한 답변을 정해진 형식으로 작성 |
 | `/ao-skill-update` | 스킬/커맨드 변경 + 전역 동기화 + 커밋 + 푸시 |
 
-## 최근 변경내역 (2026-W25)
+## 최근 변경내역 (2026-W26)
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 의 주차별 파일 참조. (주가 바뀌면 이 섹션 항목을 `changelog/<직전 주차>.md`로 옮긴다.)
 
-### 2026-06-18 - `todo` 완료 항목을 프로젝트 섹션 내 유지(아카이브 프로젝트별 구분)
-- 기존: 완료(- [x]) 항목을 훅이 `## Done (archive)` 로 이동해, 출처 프로젝트 정보를 버리고 구분 없이 평평하게 한 덩어리로 쌓음. "어느 프로젝트의 완료인지" 추적 불가
-- 변경: 완료 항목을 옮기지 않고 원래 프로젝트 섹션에 `(done YYYY-MM-DD)` 날짜 스탬프만 붙여 그대로 유지(프로젝트별 구분 자동 유지). 별도 아카이브로의 이동 폐지. 과거 이미 flat 하게 쌓인 아카이브 항목(출처 불명)은 1회 `### (미분류)` 하위섹션으로 묶어 보존. `process_todo`(구 `archive_completed`)·`_stamp_completed`·`_migrate_legacy_archive` 로 훅 재구성하고 SessionStart 안내문·SKILL.md 포맷/동작/주의 모두 반영
-- 이유: 사용자가 완료 내역을 프로젝트별로 보고 싶어 함. 이동 대신 제자리 스탬프가 구분을 가장 단순하게 유지
-- 영향 파일: `skills/todo/todo-session.py`, `skills/todo/SKILL.md`, `README.md`
-
-### 2026-06-18 - `claude-design-handoff` 에 적용 후 CSS 가드 검증 단계 추가
-- 기존: 디자인 소스 동기화·Implement 반영 후 곧장 커밋. CSS 잠복 버그(주석 별표+슬래시 조기종료 등) 검증 단계가 없었다
-- 변경: 단계 7 "핸드오프 CSS 가드로 검증" 추가 - 하네스 설치 프로젝트면 `npm run validate-handoff`, 미설치면 `handoff-css-guard` 설치 제안, stale 은 `--live` 대조. 다이어그램·"절대 어기지 말 것"에도 명문화
-- 이유: 이 스킬이 손 동기화로 바로 그 잠복 버그를 만들 수 있어, 적용→검증 루프를 닫는다
-- 영향 파일: `skills/claude-design-handoff/SKILL.md`
-
-### 2026-06-18 - `ao-skill-update` 에 하네스(설치형 스킬) 분류 + 재전파 추가
-- 기존: 변경 분류가 스킬/커맨드 두 형태뿐. 프로젝트로 복사 설치되는 하네스의 "사본 stale" 라이프사이클을 다루지 않았다
-- 변경: "하네스(설치형 스킬) 분류" 절 추가 - 동기화 흐름은 일반 스킬과 동일하되 `assets/` 변경 시 설치된 프로젝트 사본이 stale 해지므로, 종료 보고에 재전파 안내를 남기고 사용자가 지목하면 캐논으로 덮어 재전파. "절대 어기지 말 것"·"종료 시 보고"에도 반영
-- 이유: `handoff-css-guard` 같은 하네스가 늘 때 별도 `ao-harness-update` 신설(워크플로 중복+상시 토큰) 대신 ao-skill-update 하나로 흡수
-- 영향 파일: `skills/ao-skill-update/SKILL.md`
-
-### 2026-06-18 - 신규 추가: `handoff-css-guard` (핸드오프 CSS 검증 하네스 설치)
-- 종류: 스킬 (assets 번들: `css-guard.mjs`/`validate-handoff.mjs`/`css-guard.sh`/`stylelintrc.json`)
-- 목적: claude.ai/design export CSS 적용 시 빌드/`tsc`/`vitest` 가 못 잡는 "문법상 valid 인데 규칙이 통째로 죽는" 잠복 버그(주석 안 별표+슬래시 조기종료)·누락 CSS 변수·클래스 셀렉터 불일치·stale 번들을 잡는 자동화 가드를 대상 프로젝트에 설치. 편집 즉시 PostToolUse 훅(구문+누락변수, block) + 수동 `npm run validate-handoff`(+stylelint·셀렉터 리포트·stale `--live` diff)
-- 출처: socratic-learn-2 에서 실제 버그(prereq.css 헤더 주석의 별표+슬래시가 주석을 조기 종료시켜 `.pq-trigger` 베이스 규칙이 통째로 소실)를 겪고 `ooo interview` 로 요구사항을 정리해 만든 하네스를 재사용 스킬로 승격. 검증: 실제 css 거짓양성 0, 버그 픽스처 검출, 훅 block/통과/무시, stale `--live` diff 동작 확인
-- 영향 파일: `skills/handoff-css-guard/SKILL.md`, `skills/handoff-css-guard/assets/css-guard.mjs`, `skills/handoff-css-guard/assets/validate-handoff.mjs`, `skills/handoff-css-guard/assets/css-guard.sh`, `skills/handoff-css-guard/assets/stylelintrc.json`, `README.md`
-
-### 2026-06-17 - 신규 추가: `grounding-guard` (개념 출처 강제 훅 번들)
-- 종류: 훅 스크립트 번들 (사용자 호출용 스킬 아님, `knowledge-loop` 와 같은 컨테이너 패턴)
-- 목적: 개념/사양을 출처 확인 없이 단정하는 환각을 줄인다. CLAUDE.md 텍스트 규칙(advisory)이 무시될 수 있다는 한계를 훅(deterministic)으로 보완. `grounding-nudge.sh`(UserPromptSubmit)가 개념질문에 "출처부터 확인" 컨텍스트+플래그를 남기고, `verify-grounding.sh`(Stop)가 출처 흔적도 '추정/미확인' 표기도 없으면 `exit 2`로 한 번 되돌린다. 합성 입력 단위 테스트 7/7 통과
-- 안전: 전부 fail-open, `stop_hook_active`+플래그 1회 소비로 최대 1회만 차단(8회벽/루프 회피)
-- 활성화: 스크립트 동기화는 완료. `~/.claude/settings.json` 의 `UserPromptSubmit`/`Stop` 훅 등록은 사용자 승인 필요(자동 적용 안 함)
-- 영향 파일: `skills/grounding-guard/lib.sh`, `skills/grounding-guard/grounding-nudge.sh`, `skills/grounding-guard/verify-grounding.sh`, `skills/grounding-guard/README.md`(신규), `README.md`
-
-### 2026-06-16 - 전체 커맨드 7개에 `disable-model-invocation: true` 적용
-- 기존: `commands/*.md` 7개 모두 frontmatter에 `description`만 있어, 메타데이터가 상시 컨텍스트에 로드돼 토큰을 소모
-- 변경: 7개 커맨드 전부(`ao-skill-update`, `pr-description`, `pr-review-answer`, `pr-todo-notion`, `session-handoff`, `socratic-learn`, `stt-refine`)에 `disable-model-invocation: true` 추가
-- 이유: 모두 사용자가 `/이름`으로 직접 호출하는 워크플로우라 자동 발동이 불필요. 상시 description 토큰을 0으로 줄이고 명시 호출만 남김
-- 영향 파일: `commands/ao-skill-update.md`, `commands/pr-description.md`, `commands/pr-review-answer.md`, `commands/pr-todo-notion.md`, `commands/session-handoff.md`, `commands/socratic-learn.md`, `commands/stt-refine.md`
-
-### 2026-06-16 - knowledge-loop 승격 넛지 쿨다운 3일 → 3시간
-- 기존: `knowledge-nudge.sh` 의 `COOLDOWN=259200`(3일). pending 이 임계값을 넘겨도 한 번 안내 후 3일간 침묵해, 넛지가 안 뜬다고 느껴짐
-- 변경: `COOLDOWN=10800`(3시간)로 단축. 주석/안내 문구의 "3일" 표기도 "3시간"으로 통일. `THRESHOLD=8` 은 유지
-- 이유: 승격(수동)이 잊혀 후보만 쌓이는 것을 더 자주 상기. (쿨다운은 알림 빈도만 정하며 후보 수집은 SessionEnd 마다 별개로 동작)
-- 영향 파일: `skills/knowledge-loop/knowledge-nudge.sh`
-
-### 2026-06-16 - 변경내역을 주별 파일로 분리 + README엔 현재 주만 노출
-- 기존: 모든 변경내역이 README "최근 변경내역" 한 섹션에 무한 누적돼 257줄 중 150줄(약 60%)을 차지. ao-skill-update가 README를 단일 진실 소스로 매번 읽어 토큰이 계속 증가
-- 변경: 마감된 주차 이력을 `changelog/YYYY-Www.md`(ISO 주차)로 분리하고, README엔 현재 주차 항목 + 지난 주차 인덱스(링크)만 남김. `ao-skill-update`의 변경내역 갱신 규칙도 주별 라우팅(현재 주는 README, 주가 바뀌면 직전 주 블록을 changelog로 아카이브)으로 교체
-- 이유: README를 짧게 유지해 읽기/diff 토큰을 절감. 과거 이력은 필요할 때만 changelog 파일로 조회
-- 영향 파일: `README.md`, `changelog/2026-W24.md`(신규), `changelog/2026-W23.md`(신규), `changelog/2026-W21.md`(신규), `skills/ao-skill-update/SKILL.md`
-
-### 2026-06-16 - `ao-skill-update` 브랜치 예외 명문화
-- 기존: 전역 "새 작업은 새 브랜치" 규칙과 이 레포의 main 직커밋 관례가 충돌해, 작업 때마다 새 브랜치 생성/머지 고민이 반복됐다
-- 변경: "단일 진실 소스"에 브랜치 예외 한 줄 추가 - ao-skills 는 개인 설정 단일 저장소라 새 브랜치 규칙의 예외이며 `main` 에서 바로 편집·커밋·푸시한다
-- 이유: 동일 충돌 반복 방지. main 정본과 `~/.claude/` 동기화 상태가 항상 일치하게 유지
-- 영향 파일: `skills/ao-skill-update/SKILL.md`, `README.md`
-
-### 2026-06-16 - `knowledge-loop` 승격 분류에 "프로젝트 기술 문서" 경로 추가
-- 기존: 프로젝트 도메인 지식은 경로가 `<project>/CLAUDE.md` 하나뿐이라, 긴 기술 명세(아키텍처/데이터 모델 등)도 상시 로드되는 CLAUDE.md 본문에 그대로 적재됐다. "길면 docs로 빼라"는 원칙은 있었으나 전역 `~/.claude/knowledge/docs/`만 가리켜 프로젝트 레포 내부 라우팅으로 이어지지 않았다
-- 변경: 승격 대상에 **프로젝트 기술 문서 → `<project>/docs/<주제>.md`** 경로 추가. CLAUDE.md엔 "상세는 `docs/<주제>.md` 참조" 한 줄만 남긴다. 분류 기준 명시(1~2줄 규칙이면 CLAUDE.md, 길거나 구조적이면 docs + 참조). 원칙 섹션도 프로젝트 docs를 포함하도록 보강
-- 이유: CLAUDE.md는 매 세션/프롬프트에 상시 로드돼 긴 명세가 항상 토큰을 먹는다. 필요할 때만 읽히는 docs로 빼고 라우팅만 남기는 게 토큰 효율적
-- 영향 파일: `skills/knowledge-loop/SKILL.md`, `README.md`
-
-### 2026-06-16 - `knowledge-loop` 추출 신뢰성 개선 + 승격 넛지 추가
-- 기존: ① 같은 세션이 SessionEnd마다 재추출돼 동일 지식이 중복 적재(예: 한 결정이 7~8회), ② claude 호출 실패 시 에러 문자열("API Error...")이 지식으로 적재됨, ③ 거대 붙여넣기(HTML/스킬 번들)가 `tail -c 15000` 샘플을 채워 실제 대화 신호가 잘려 false negative 발생, ④ 수동 승격(`/knowledge-loop`)을 부르는 알림이 없어 후보만 쌓임
-- 변경: ① `.extract-state` 의 세션별 high-water mark 이후 새 메시지만 샘플링, ② claude 종료코드(rc=0) + 불릿(`- `) 출력만 적재(에러/잡문 배제), ③ 붙여넣기 블록 제외 + 메시지당 2000자 캡, ④ `knowledge-nudge.sh`(SessionStart)가 pending 8세션 이상 시 3일 쿨다운으로 리뷰 권유. extract.log 에 `rc`/`new` 필드 추가
-- 이유: 추출 단계는 자동으로 돌고 있었으나 중복/오적재/누락으로 신뢰도가 낮았고, 승격 단계는 트리거가 없어 한 번도 실행되지 않았음
-- 영향 파일: `skills/knowledge-loop/knowledge-extract.sh`, `skills/knowledge-loop/knowledge-nudge.sh`(신규), `skills/knowledge-loop/SKILL.md`, `README.md` (별도: `~/.claude/settings.json` SessionStart 훅 등록)
+### 2026-06-27 - 신규 추가: `yfix` (버그 원인 설명 + 해결책 트레이드오프 비교 후 선택 질문)
+- 종류: 스킬
+- 목적: 버그/문제를 곧장 고치지 않고 ① 코드를 실제 조사해 근본 원인을 근거(`파일:라인`)와 함께 설명, ② 해결책 후보들(개수 유동적)을 트레이드오프 표로 비교, ③ `AskUserQuestion` 으로 어느 방향으로 고칠지 선택을 묻는다. 실제 수정은 스킬 밖 일반 흐름. 트리거는 명시적 `/yfix` + 버그 수정 맥락 자동 감지(자명한 오타류는 생략)
+- 출처: `ooo interview` 로 요구사항(책임 경계=분석+질문까지, 코드 실제 조사, 후보 수 유동적, 항상 절차 준수)을 정리해 생성
+- 영향 파일: `skills/yfix/SKILL.md`, `README.md`
 
 ### 지난 변경내역
+- [`2026-W25`](changelog/2026-W25.md) - 2026-06-15 ~ 06-21
 - [`2026-W24`](changelog/2026-W24.md) - 2026-06-08 ~ 06-14
 - [`2026-W23`](changelog/2026-W23.md) - 2026-06-01 ~ 06-07
 - [`2026-W21`](changelog/2026-W21.md) - 2026-05-18 ~ 05-24
