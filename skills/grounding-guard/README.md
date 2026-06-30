@@ -8,14 +8,18 @@
 ## 동작 (두 훅이 한 쌍)
 
 1. **`grounding-nudge.sh`** - `UserPromptSubmit` 훅
-   - 질문이 개념/사양 설명 요청(`GG_CONCEPT_RE` 매칭)이면 "출처부터 확인하라"는 컨텍스트를
-     주입하고, 이번 턴 플래그(`~/.claude/.grounding-guard/<session_id>.flag`)를 남긴다.
+   - 질문이 개념/사양 설명 요청(`GG_CONCEPT_RE` 매칭)이면 "답 쓰기 전에 근거를 확보하라"는
+     컨텍스트를 주입하고, 이번 턴 플래그(`~/.claude/.grounding-guard/<session_id>.flag`)를 남긴다.
+   - 안내문은 **Stop 훅의 통과조건과 1:1로 일치**한다: (A) 구체 사양·API 는 출처 확인 후
+     `근거:` 표기, (B) 널리 알려진 표준·일반 개념은 출처 대신 `표준 개념` 으로 명시 + 불확실분
+     `추정/미확인` 표기. 이렇게 앞 안내와 뒤 검사를 맞춰, 첫 답변이 곧바로 통과하고 **두 번
+     쓰지 않게** 한다(되돌림은 사후 훅이라 한 번 막히면 곧 재작성 = 사용자가 두 번 읽음).
    - 근거: `UserPromptSubmit` 은 `prompt` 필드를 받고, exit 0 stdout 이 Claude 컨텍스트로 들어감.
 
 2. **`verify-grounding.sh`** - `Stop` 훅
    - 플래그가 있는 턴(=개념질문)인데 ① 트랜스크립트에 출처 도구(Read/Grep/Glob/WebFetch 등)
-     사용 흔적이 0이고 ② 답변에 '추정/미확인' 표기도 없으면 `exit 2`로 **한 번** 되돌려
-     근거 확인 또는 불확실성 표기를 요구한다.
+     사용 흔적이 0이고 ② 답변에 '추정/미확인/표준 개념/출처:/근거:' 표기도 없으면 `exit 2`로
+     **한 번** 되돌려 근거 확인 또는 불확실성·표준개념 표기를 요구한다.
    - 근거: `Stop` 은 `transcript_path`/`last_assistant_message`/`stop_hook_active` 를 받고,
      block 시 stderr/reason 이 다음 지시로 Claude 에 피드백됨. 8회 연속 차단 시 하네스가 종료.
 

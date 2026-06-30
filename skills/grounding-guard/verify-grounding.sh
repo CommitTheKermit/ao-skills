@@ -28,8 +28,10 @@ flag="$FLAG_DIR/$session_id.flag"
 # 플래그는 평가 즉시 소비(중복 차단/스테일 방지)
 rm -f "$flag" 2>/dev/null
 
-# 답변이 이미 출처/불확실성을 명시했으면 통과(사용자 규칙상 '미확인' 의역도 정상 준수)
-if printf '%s' "$last_msg" | grep -qE '추정|미확인|확인 (못|하지 못|불가)|출처[:：]|근거[:：]'; then
+# 답변이 이미 출처/불확실성/표준개념을 명시했으면 통과.
+# (널리 알려진 표준·일반 개념은 출처 대신 '표준 개념'으로 정직히 밝히면 첫 턴에 통과 -
+#  grounding-nudge.sh 의 (B) 탈출구와 일치. '미확인' 의역도 정상 준수.)
+if printf '%s' "$last_msg" | grep -qE '추정|미확인|확인 (못|하지 못|불가)|출처[:：]|근거[:：]|표준 ?개념|일반 ?개념'; then
   gg_log "pass(marker) session=${session_id:0:8}"
   exit 0
 fi
