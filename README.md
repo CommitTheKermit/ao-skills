@@ -9,6 +9,8 @@ ao-skills/
 ├── skills/
 │   ├── ao-skill-update/     # 스킬/커맨드 변경 워크플로우 스킬
 │   │   └── SKILL.md
+│   ├── check-android-review-readiness/ # Play 심사 준비 상태 점검 스킬
+│   │   └── SKILL.md
 │   ├── claude-design-handoff/ # claude.ai/design 핸드오프 링크로 디자인 소스 최신화 스킬
 │   │   └── SKILL.md
 │   ├── handoff-css-guard/   # 핸드오프 CSS 검증 하네스 설치 (css-guard 훅 + validate-handoff)
@@ -24,6 +26,9 @@ ao-skills/
 │   │   └── knowledge-extract.sh
 │   ├── release-commit/      # 배포/릴리스 직후 release 커밋을 고정 포맷으로 작성하는 스킬
 │   │   └── SKILL.md
+│   ├── record-android-review-failure/ # Play 심사 실패 사례 수집 스킬
+│   │   ├── SKILL.md
+│   │   └── references/failure-cases.md
 │   └── todo/                # 프로젝트별/전역 TODO 관리 스킬 (+ 세션 훅)
 │       ├── SKILL.md
 │       └── todo-session.py
@@ -89,6 +94,11 @@ Android 앱의 단위 테스트와 release bundle 빌드를 실행하고, Play �
 
 발동 표현: "AAB 빌드", "서명 AAB", "심사용 번들", "bundleRelease", "Play 업로드 파일 만들어줘" 등.
 
+### check-android-review-readiness
+Android 프로젝트와 Play Console 자료를 최신 Google 공식 정책 및 누적된 실제 심사 실패 사례에 대조하고 Gradle 검사를 실행해 `통과 가능`·`실패 위험`·`확인 불가`로 판정한다. 실제 승인 결과는 보장하지 않는다.
+
+발동 표현: "안드로이드 심사 통과할까", "Play 심사 테스트", "출시 전 정책 점검", "리젝 위험 검사" 등.
+
 ### grounding-guard
 개념/사양을 **출처 확인 없이 단정하는 환각**을 줄이는 훅 스크립트 번들(사용자 호출용 스킬 아님, `knowledge-loop` 와 같은 훅 컨테이너 패턴). `grounding-nudge.sh`(UserPromptSubmit)가 개념질문에 "출처부터 확인하라" 컨텍스트를 주입하고 이번 턴 플래그를 남기면, `verify-grounding.sh`(Stop)가 그 턴에 출처 도구 사용 흔적도 '추정/미확인' 표기도 없을 때 `exit 2`로 한 번 되돌려 보완을 요구한다. fail-open + `stop_hook_active` + 플래그 1회 소비로 최대 1회만 차단. `~/.claude/settings.json` 훅 등록은 동기화 범위 밖이라 수동(상세: `skills/grounding-guard/README.md`).
 
@@ -109,6 +119,11 @@ claude.ai/design export(핸드오프) CSS 를 옮길 때 빌드·`tsc`·`vitest`
 배포/릴리스 직후 남기는 release 커밋을 고정 포맷(`chore(release): vX.Y.Z 배포`)으로 작성한다. 직전 release 이후의 `git log`를 뽑아 변경 목록·배포 대상·버전 증감을 본문에 채워, 요약 한두 줄로 끝나 추적이 안 되는 빈약한 release 커밋을 막는다.
 
 발동 표현: "release 커밋", "버전 커밋", "릴리스 커밋", "배포 커밋 정리" 등.
+
+### record-android-review-failure
+사용자가 제공한 Play Console 거절 통지·스크린샷·설명에서 개인정보를 제거하고 실패 조건과 검출·예방 방법을 공용 사례집에 누적한 뒤 Git으로 공유한다. 중복 사례는 새로 만들지 않고 기존 항목을 보강한다.
+
+발동 표현: "심사 실패 사례 추가", "리젝 사유 기록", "이 실패 요소를 다음 심사 점검에 반영해줘" 등.
 
 ### todo
 프로젝트별/전역 TODO 를 등록·완료·조회·삭제하고, 항목별 문맥 파일(`todo-context/<슬러그>.md`)을 `(ctx: ...)` 링크로 연결한다. 세션 시작 시 자동 표시되는 전역 `~/.claude/todo.md` 를 `## 공통`/`## <프로젝트 절대경로>` 섹션 체크리스트 포맷으로 직접 편집한다. 완료 항목은 원래 프로젝트 섹션에 그대로 남고(프로젝트별 구분 유지), 미완료 표시·완료 날짜 스탬프는 번들된 `todo-session.py` 훅이 SessionStart/SessionEnd 에서 처리하며, 스킬은 항목·문맥 편집만 담당한다.
@@ -140,6 +155,16 @@ claude.ai/design export(핸드오프) CSS 를 옮길 때 빌드·`tsc`·`vitest`
 ## 최근 변경내역 (2026-W33)
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 의 주차별 파일 참조. (주가 바뀌면 이 섹션 항목을 `changelog/<직전 주차>.md`로 옮긴다.)
+
+### 2026-08-10 - 신규 추가: `check-android-review-readiness`
+- 종류: 스킬
+- 목적: 최신 공식 정책·프로젝트 검사·누적 실패 사례로 Google Play 심사 준비 상태 판정
+- 영향 파일: `skills/check-android-review-readiness/SKILL.md`, `skills/check-android-review-readiness/agents/openai.yaml`, `README.md`
+
+### 2026-08-10 - 신규 추가: `record-android-review-failure`
+- 종류: 스킬
+- 목적: 사용자 제보 Android 심사 실패 요소를 정규화해 Git 기반 공용 사례집에 축적
+- 영향 파일: `skills/record-android-review-failure/SKILL.md`, `skills/record-android-review-failure/references/failure-cases.md`, `skills/record-android-review-failure/agents/openai.yaml`, `README.md`
 
 ### 2026-08-10 - 신규 추가: `build-signed-aab`
 - 종류: 스킬
