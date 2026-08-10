@@ -1,0 +1,4 @@
+interface:
+  display_name: "Build Signed AAB"
+  short_description: "Play 제출용 서명 AAB를 안전하게 빌드하고 검증"
+  default_prompt: "Use $build-signed-aab to create and verify a signed Play Console AAB for this Android project."

@@ -84,6 +84,11 @@ cp /path/to/ao-skills/commands/* .claude/commands/
 
 발동 표현: "스킬 만들자", "스킬 수정", "커맨드 추가", "커맨드 변경", "스킬 동기화" 등.
 
+### build-signed-aab
+Android 앱의 단위 테스트와 release bundle 빌드를 실행하고, Play 제출용 AAB의 서명·application ID·버전·런처 아이콘을 검증한 뒤 버전명 파일로 보관한다. 버전과 패키지명은 자동 변경하지 않는다.
+
+발동 표현: "AAB 빌드", "서명 AAB", "심사용 번들", "bundleRelease", "Play 업로드 파일 만들어줘" 등.
+
 ### grounding-guard
 개념/사양을 **출처 확인 없이 단정하는 환각**을 줄이는 훅 스크립트 번들(사용자 호출용 스킬 아님, `knowledge-loop` 와 같은 훅 컨테이너 패턴). `grounding-nudge.sh`(UserPromptSubmit)가 개념질문에 "출처부터 확인하라" 컨텍스트를 주입하고 이번 턴 플래그를 남기면, `verify-grounding.sh`(Stop)가 그 턴에 출처 도구 사용 흔적도 '추정/미확인' 표기도 없을 때 `exit 2`로 한 번 되돌려 보완을 요구한다. fail-open + `stop_hook_active` + 플래그 1회 소비로 최대 1회만 차단. `~/.claude/settings.json` 훅 등록은 동기화 범위 밖이라 수동(상세: `skills/grounding-guard/README.md`).
 
@@ -132,23 +137,17 @@ claude.ai/design export(핸드오프) CSS 를 옮길 때 빌드·`tsc`·`vitest`
 | `/pr-review-answer` | PR 리뷰 코멘트 질문에 대한 답변을 정해진 형식으로 작성 |
 | `/ao-skill-update` | 스킬/커맨드 변경 + 전역 동기화 + 커밋 + 푸시 |
 
-## 최근 변경내역 (2026-W26)
+## 최근 변경내역 (2026-W33)
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 의 주차별 파일 참조. (주가 바뀌면 이 섹션 항목을 `changelog/<직전 주차>.md`로 옮긴다.)
 
-### 2026-06-27 - 신규 추가: `no-ai-design` ("LLM은 설계를 못한다" 설계 게이트)
+### 2026-08-10 - 신규 추가: `build-signed-aab`
 - 종류: 스킬
-- 목적: 새 모듈/기능 구현처럼 설계가 개입되는 작업에서, 구현 전에 설계 결정점(모듈/파일 경계·데이터 모델·공개 인터페이스·알고리즘/라이브러리/패턴)을 추출해 각 결정점마다 옵션 메뉴+트레이드오프를 제시하되 최종 선택은 사람이 `AskUserQuestion`으로 하게 한다. 합의 설계는 설계 노트 마크다운 파일(`design/<주제>.md`)로 기록하고 그 틀 안에서만 구현하며, 코딩 중 합의 안 된 새 설계 결정이 생기면 다시 멈춰 사람에게 묻는다(구현 가드). 함수 내부/지역 구현은 LLM 자율, 사소·애매한 작업은 "설계 점검할까요?"로 짧게 확인
-- 출처: `ooo interview` 로 요구사항(개입 수준=옵션 메뉴 제시·선택은 사람, 책임=합의+구현 가드, 설계 경계=구조+기술 선택)을 정리해 생성
-- 영향 파일: `skills/no-ai-design/SKILL.md`, `README.md`
-
-### 2026-06-27 - 신규 추가: `yfix` (버그 원인 설명 + 해결책 트레이드오프 비교 후 선택 질문)
-- 종류: 스킬
-- 목적: 버그/문제를 곧장 고치지 않고 ① 코드를 실제 조사해 근본 원인을 근거(`파일:라인`)와 함께 설명, ② 해결책 후보들(개수 유동적)을 트레이드오프 표로 비교, ③ `AskUserQuestion` 으로 어느 방향으로 고칠지 선택을 묻는다. 실제 수정은 스킬 밖 일반 흐름. 트리거는 명시적 `/yfix` + 버그 수정 맥락 자동 감지(자명한 오타류는 생략)
-- 출처: `ooo interview` 로 요구사항(책임 경계=분석+질문까지, 코드 실제 조사, 후보 수 유동적, 항상 절차 준수)을 정리해 생성
-- 영향 파일: `skills/yfix/SKILL.md`, `README.md`
+- 목적: Android 앱의 테스트·release bundle 빌드·서명·manifest·런처 아이콘을 한 번에 검증하고 Play 제출용 버전명 AAB로 보관
+- 영향 파일: `skills/build-signed-aab/SKILL.md`, `skills/build-signed-aab/scripts/build-signed-aab.sh`, `skills/build-signed-aab/agents/openai.yaml`, `README.md`
 
 ### 지난 변경내역
+- [`2026-W26`](changelog/2026-W26.md) - 2026-06-22 ~ 06-28
 - [`2026-W25`](changelog/2026-W25.md) - 2026-06-15 ~ 06-21
 - [`2026-W24`](changelog/2026-W24.md) - 2026-06-08 ~ 06-14
 - [`2026-W23`](changelog/2026-W23.md) - 2026-06-01 ~ 06-07
