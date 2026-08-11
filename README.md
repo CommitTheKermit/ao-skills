@@ -150,11 +150,17 @@ claude.ai/design export(핸드오프) CSS 를 옮길 때 빌드·`tsc`·`vitest`
 | `/pr-todo-notion` | GitHub PR을 Notion 단순 체크박스 TODO 페이지로 정리 |
 | `/pr-description` | PR 디스크립션을 정해진 형식으로 작성 |
 | `/pr-review-answer` | PR 리뷰 코멘트 질문에 대한 답변을 정해진 형식으로 작성 |
+| `/step-by-step` | 구현을 작은 단계로 쪼개 단계마다 검증·보고·승인을 거치며 진행 |
 | `/ao-skill-update` | 스킬/커맨드 변경 + 전역 동기화 + 커밋 + 푸시 |
 
 ## 최근 변경내역 (2026-W33)
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 의 주차별 파일 참조. (주가 바뀌면 이 섹션 항목을 `changelog/<직전 주차>.md`로 옮긴다.)
+
+### 2026-08-11 - 신규 추가: `step-by-step`
+- 종류: 커맨드
+- 목적: 구현 작업을 검증 가능한 작은 단계로 쪼개고, 단계마다 완료/다음을 구분선으로 보고하며, 미결정 사항을 다음 단계로 넘기기 전에 AskUserQuestion 으로 해소
+- 영향 파일: `commands/step-by-step.md`, `README.md`
 
 ### 2026-08-10 - 신규 추가: `check-android-review-readiness`
 - 종류: 스킬
