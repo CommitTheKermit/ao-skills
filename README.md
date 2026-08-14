@@ -29,6 +29,8 @@ ao-skills/
 │   ├── record-android-review-failure/ # Play 심사 실패 사례 수집 스킬
 │   │   ├── SKILL.md
 │   │   └── references/failure-cases.md
+│   ├── step-by-step/        # Codex용 단계별 구현·검증 워크플로우 스킬
+│   │   └── SKILL.md
 │   └── todo/                # 프로젝트별/전역 TODO 관리 스킬 (+ 세션 훅)
 │       ├── SKILL.md
 │       └── todo-session.py
@@ -125,6 +127,11 @@ claude.ai/design export(핸드오프) CSS 를 옮길 때 빌드·`tsc`·`vitest`
 
 발동 표현: "심사 실패 사례 추가", "리젝 사유 기록", "이 실패 요소를 다음 심사 점검에 반영해줘" 등.
 
+### step-by-step
+Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다 범위 승인·구현·검증·보고·커밋을 반복한다. 보고할 때는 전체 진행 단계 체크리스트를 완료 섹션 위에 표시한다.
+
+발동 표현: "$step-by-step", "/step-by-step", "한 단계씩 구현해줘" 등.
+
 ### todo
 프로젝트별/전역 TODO 를 등록·완료·조회·삭제하고, 항목별 문맥 파일(`todo-context/<슬러그>.md`)을 `(ctx: ...)` 링크로 연결한다. 세션 시작 시 자동 표시되는 전역 `~/.claude/todo.md` 를 `## 공통`/`## <프로젝트 절대경로>` 섹션 체크리스트 포맷으로 직접 편집한다. 완료 항목은 원래 프로젝트 섹션에 그대로 남고(프로젝트별 구분 유지), 미완료 표시·완료 날짜 스탬프는 번들된 `todo-session.py` 훅이 SessionStart/SessionEnd 에서 처리하며, 스킬은 항목·문맥 편집만 담당한다.
 
@@ -156,6 +163,12 @@ claude.ai/design export(핸드오프) CSS 를 옮길 때 빌드·`tsc`·`vitest`
 ## 최근 변경내역 (2026-W33)
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 의 주차별 파일 참조. (주가 바뀌면 이 섹션 항목을 `changelog/<직전 주차>.md`로 옮긴다.)
+
+### 2026-08-14 - `step-by-step` 보고에 전체 진행 단계 표시
+- 기존: 완료한 단계와 바로 다음 단계만 보고
+- 변경: 완료 섹션 위에 완료·다음·남은 전체 단계 체크리스트를 표시하고, Codex 전역 사본만 있던 스킬을 원본 저장소에 등록
+- 이유: 매 단계 보고에서 전체 진행 위치와 남은 범위를 한눈에 확인하기 위해
+- 영향 파일: `skills/step-by-step/SKILL.md`, `skills/step-by-step/agents/openai.yaml`, `commands/step-by-step.md`, `README.md`
 
 ### 2026-08-11 - `step-by-step` 구현 단계를 코덱스 위임으로 전환
 - 기존: 3단계 "구현"을 클로드가 직접 수행
