@@ -1,0 +1,14 @@
+{
+  "//": "핸드오프 CSS 일반 품질 가드. 표준 config 는 oklch/모던 문법에 노이즈가 커서 미사용. CssSyntaxError(파싱 오류)는 규칙과 무관하게 항상 보고된다.",
+  "rules": {
+    "no-invalid-double-slash-comments": true,
+    "comment-no-empty": true,
+    "no-empty-source": true,
+    "block-no-empty": true,
+    "declaration-block-no-duplicate-properties": [
+      true,
+      { "ignore": ["consecutive-duplicates-with-different-values"], "severity": "warning" }
+    ],
+    "no-duplicate-at-import-rules": true
+  }
+}

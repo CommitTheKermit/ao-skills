@@ -1,0 +1,4 @@
+interface:
+  display_name: "Record Android Review Failure"
+  short_description: "Play 심사 실패 사례를 정규화해 공용 사례집에 축적"
+  default_prompt: "Use $record-android-review-failure to record this Google Play review failure in the shared case log."

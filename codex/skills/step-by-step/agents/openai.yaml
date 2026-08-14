@@ -1,0 +1,4 @@
+interface:
+  display_name: "Step by Step"
+  short_description: "구현을 작은 단계로 나누어 승인·검증하며 진행"
+  default_prompt: "$step-by-step 스킬로 이 구현 작업을 검증 가능한 한 단계씩 진행해 주세요."

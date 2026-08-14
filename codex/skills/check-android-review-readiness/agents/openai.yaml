@@ -1,0 +1,4 @@
+interface:
+  display_name: "Check Android Review Readiness"
+  short_description: "Play 정책과 누적 실패 사례로 Android 심사 위험 점검"
+  default_prompt: "Use $check-android-review-readiness to assess this Android project before Google Play review."

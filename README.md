@@ -1,6 +1,6 @@
 # ao-skills
 
-Claude Code에서 사용 중인 개인 스킬(Skill)과 슬래시 커맨드(Slash Command) 모음.
+Claude Code와 Codex에서 사용하는 개인 스킬(Skill)과 슬래시 커맨드(Slash Command) 모음.
 
 ## 구성
 
@@ -42,8 +42,16 @@ ao-skills/
 │   ├── pr-description.md    # /pr-description - PR 디스크립션 작성
 │   ├── pr-review-answer.md  # /pr-review-answer - PR 리뷰 답변 작성
 │   └── ao-skill-update.md   # /ao-skill-update - 스킬/커맨드 변경+동기화+커밋+푸시
+├── codex/                   # Codex 전용 원본과 동기화·검증 스크립트
+│   ├── skills/
+│   ├── commands/
+│   ├── sync.sh
+│   └── verify.sh
 └── changelog/               # 주차(ISO week)별 변경내역 아카이브 (YYYY-Www.md)
 ```
+
+`skills/`, `commands/`는 Claude용이고 `codex/`는 Codex용이다. 두 실행 환경의 전역 경로와
+도구명이 다르므로 같은 이름의 스킬을 한 디렉터리에서 공유하지 않는다.
 
 ## 스킬 vs 커맨드
 
@@ -58,7 +66,7 @@ ao-skills/
 
 ## 설치
 
-### 전역 설치 (모든 프로젝트에서 사용)
+### Claude 전역 설치
 
 ```bash
 # 이 레포를 임의 위치에 클론
@@ -82,12 +90,24 @@ cp /path/to/ao-skills/commands/* .claude/commands/
 
 설치 후 Claude Code를 재시작하면 인식됩니다.
 
+### Codex 전역 설치
+
+```bash
+cd /path/to/ao-skills
+bash codex/sync.sh
+bash codex/verify.sh
+```
+
+Codex 스킬은 `~/.agents/skills/`, 커맨드는 `~/.Codex/commands/`에 설치된다. 동기화 과정에서
+과거 `~/.Codex/skills/`에 복사돼 중복 등록된 ao-skills 사본만 제거한다. 적용은 새 Codex
+세션부터 확실하게 반영된다.
+
 ## 스킬 목록
 
 > 스킬/커맨드는 기능상 동일하다(위 "스킬 vs 커맨드" 참고). 부속 파일(훅 스크립트 등)이 필요한 워크플로우만 스킬 디렉터리로 두고, 단일 프롬프트 문서는 커맨드 파일로 둔다.
 
 ### ao-skill-update
-이 레포의 스킬/커스텀 커맨드를 추가/수정/삭제한 뒤 `~/.claude/`로 동기화하고 커밋과 푸시까지 자동 처리하는 워크플로우.
+이 레포의 스킬/커스텀 커맨드를 추가/수정/삭제한 뒤 실행 환경별 전역 경로로 동기화하고 커밋과 푸시까지 자동 처리하는 워크플로우. Codex에서는 `codex/` 원본만 편집한다.
 
 발동 표현: "스킬 만들자", "스킬 수정", "커맨드 추가", "커맨드 변경", "스킬 동기화" 등.
 
@@ -133,7 +153,7 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 발동 표현: "$step-by-step", "/step-by-step", "한 단계씩 구현해줘" 등.
 
 ### todo
-프로젝트별/전역 TODO 를 등록·완료·조회·삭제하고, 항목별 문맥 파일(`todo-context/<슬러그>.md`)을 `(ctx: ...)` 링크로 연결한다. 세션 시작 시 자동 표시되는 전역 `~/.claude/todo.md` 를 `## 공통`/`## <프로젝트 절대경로>` 섹션 체크리스트 포맷으로 직접 편집한다. 완료 항목은 원래 프로젝트 섹션에 그대로 남고(프로젝트별 구분 유지), 미완료 표시·완료 날짜 스탬프는 번들된 `todo-session.py` 훅이 SessionStart/SessionEnd 에서 처리하며, 스킬은 항목·문맥 편집만 담당한다.
+프로젝트별/전역 TODO 를 등록·완료·조회·삭제하고, 항목별 문맥 파일을 연결한다. Claude는 `~/.claude/todo.md`, Codex는 `~/.Codex/todo.md`를 사용하며 각 플랫폼 전용 스킬과 훅이 해당 파일만 읽는다.
 
 발동 표현: "todo/투두 추가", "할 일 등록", "todo/투두 완료/체크", "todo/투두 목록", "/todo" 등.
 
@@ -163,6 +183,12 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 ## 최근 변경내역 (2026-W33)
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 의 주차별 파일 참조. (주가 바뀌면 이 섹션 항목을 `changelog/<직전 주차>.md`로 옮긴다.)
+
+### 2026-08-14 - Claude와 Codex 스킬 원본·설치 경로 분리
+- 기존: Claude용 `skills/`를 `~/.Codex/skills/`에도 복사해 동일 이름의 Codex 스킬과 충돌하고 `.claude` 데이터·도구를 잘못 사용
+- 변경: `codex/skills/`, `codex/commands/`를 별도 원본으로 두고 `codex/sync.sh`가 `~/.agents/skills/`와 `~/.Codex/commands/`에 설치하며 레거시 중복 사본을 제거. `codex/verify.sh`로 Claude 전용 참조와 중복 이름을 차단
+- 이유: Codex에서 `/todo`가 `~/.claude/todo.md`를 읽은 실제 충돌을 모든 ao-skills에서 재발하지 않게 하기 위해
+- 영향 파일: `codex/`, `README.md`
 
 ### 2026-08-14 - `step-by-step` 보고에 전체 진행 단계 표시
 - 기존: 완료한 단계와 바로 다음 단계만 보고
