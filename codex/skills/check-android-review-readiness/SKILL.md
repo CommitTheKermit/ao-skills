@@ -5,6 +5,10 @@ description: Android 앱의 Google Play 심사 준비 상태를 최신 공식 �
 
 # Check Android Review Readiness
 
+<!-- usage-stats: skill check-android-review-readiness -->
+
+첫 동작으로 `python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record skill check-android-review-readiness >/dev/null 2>&1 || true`를 이 발동에서 한 번만 실행한다.
+
 확인 가능한 범위에서 Google Play 심사 차단 위험을 찾는다. 실제 심사 결과를 보장하지 않는다.
 
 ## 절차

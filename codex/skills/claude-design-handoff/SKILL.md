@@ -5,6 +5,10 @@ description: claude.ai/design 핸드오프 링크(`api.anthropic.com/v1/design/.
 
 # claude-design-handoff
 
+<!-- usage-stats: skill claude-design-handoff -->
+
+첫 동작으로 `python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record skill claude-design-handoff >/dev/null 2>&1 || true`를 이 발동에서 한 번만 실행한다.
+
 claude.ai/design 에서 만든 시안의 핸드오프 링크를 받아, **번들을 실제로 내려받아 시안과 정확히 동기화**해 프로젝트의 디자인 소스를 최신화한다. 텍스트 설명만으로 추측 구현하지 않는다.
 
 ## 발동 조건

@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# usage-stats: harness build-signed-aab
+python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record harness build-signed-aab >/dev/null 2>&1 || true
+
 project_root="${1:-$PWD}"
 
 if [[ -x "$project_root/gradlew" ]]; then

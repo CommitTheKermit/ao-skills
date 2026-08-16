@@ -5,6 +5,10 @@ description: 배포/릴리스 직후 남기는 release 커밋을 고정 포맷�
 
 # release-commit
 
+<!-- usage-stats: skill release-commit -->
+
+첫 동작으로 `python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record skill release-commit >/dev/null 2>&1 || true`를 이 발동에서 한 번만 실행한다.
+
 배포(또는 버전 릴리스) 직후 남기는 커밋을 **일정한 포맷**으로 작성하고, 본문은 **직전 배포 이후의 git 내역에서 자동으로 뽑아** 채운다. 한두 줄 요약만 남겨 "이번 배포에 무엇이 들어갔는지" 추적이 안 되는 문제를 막는 것이 목적이다.
 
 ## 고정 포맷

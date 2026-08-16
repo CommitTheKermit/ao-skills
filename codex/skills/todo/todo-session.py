@@ -37,6 +37,7 @@
 import sys
 import os
 import json
+import subprocess
 import time
 from datetime import date
 
@@ -44,6 +45,22 @@ THRESHOLD_SECONDS = 3600  # "오랜만" 강조 임계값: 1시간
 ARCHIVE_HEADER = "## Done (archive)"
 UNCLASSIFIED_HEADER = "### (미분류)"
 COMMON_KEY = "공통"
+
+
+def _record_usage(mode):
+    # usage-stats: hook todo-session-start
+    # usage-stats: hook todo-session-end
+    name = "todo-session-end" if mode == "end" else "todo-session-start"
+    tracker = os.path.expanduser("~/.agents/skills/usage-stats/scripts/usage_stats.py")
+    try:
+        subprocess.run(
+            [sys.executable, tracker, "record", "hook", name],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+    except OSError:
+        pass
 
 
 def _read_payload():
@@ -312,6 +329,7 @@ def run_end(payload):
 
 def main():
     mode = sys.argv[1] if len(sys.argv) > 1 else "start"
+    _record_usage(mode)
     payload = _read_payload()
     try:
         if mode == "end":

@@ -5,6 +5,10 @@ description: ao-skills 레포의 Codex 전용 스킬/커맨드를 변경하고 �
 
 # ao-skill-update (Codex)
 
+<!-- usage-stats: skill ao-skill-update -->
+
+첫 동작으로 `python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record skill ao-skill-update >/dev/null 2>&1 || true`를 이 발동에서 한 번만 실행한다.
+
 `/Users/ujeonghyeon/Desktop/dev/myDev/ao-skills`를 단일 진실 소스로 사용한다. Claude용 원본과
 Codex용 원본을 섞지 않는다.
 
@@ -23,15 +27,16 @@ Codex 작업에서는 `codex/` 아래만 편집한다. 전역 설치본을 직�
 2. 신규인데 사용자가 형태를 지정하지 않았다면 부속 파일 유무를 기준으로 스킬 또는 커맨드를
    먼저 선택받는다.
 3. 스킬은 `codex/skills/<name>/`, 커맨드는 `codex/commands/<name>.md`에서 편집한다.
-4. `README.md`의 현재 ISO 주차 변경내역 맨 위에 기존·변경·이유·영향 파일을 기록한다.
-5. `bash codex/sync.sh`로 동기화한다.
-6. 아래 검증을 실행한다.
+4. 새 스킬·훅·하네스에는 `usage-stats` 기록 명령과 `usage-stats: <kind> <name>` 마커를 넣는다.
+5. `README.md`의 현재 ISO 주차 변경내역 맨 위에 기존·변경·이유·영향 파일을 기록한다.
+6. `bash codex/sync.sh`로 동기화한다.
+7. 아래 검증을 실행한다.
 
    ```bash
    bash codex/verify.sh
    ```
 
-7. 한국어 conventional commit을 만들고 `git push origin main`을 실행한다. 서명 트레일러는
+8. 한국어 conventional commit을 만들고 `git push origin main`을 실행한다. 서명 트레일러는
    넣지 않는다.
 
 ## 신규 파일 형식

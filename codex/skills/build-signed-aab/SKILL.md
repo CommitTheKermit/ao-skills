@@ -5,6 +5,10 @@ description: Android 프로젝트에서 Play Console 제출용 서명 release AA
 
 # Build Signed AAB
 
+<!-- usage-stats: skill build-signed-aab -->
+
+첫 동작으로 `python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record skill build-signed-aab >/dev/null 2>&1 || true`를 이 발동에서 한 번만 실행한다.
+
 ## 절차
 
 1. 저장소와 Android 스코프의 `AGENTS.md`를 읽는다.

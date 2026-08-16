@@ -5,6 +5,10 @@ description: 사용자가 제공한 Google Play Android 앱 심사 거절 메일
 
 # Record Android Review Failure
 
+<!-- usage-stats: skill record-android-review-failure -->
+
+첫 동작으로 `python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record skill record-android-review-failure >/dev/null 2>&1 || true`를 이 발동에서 한 번만 실행한다.
+
 실제 Google Play 심사 실패 자료를 최소한의 재사용 가능한 사실로 정규화하고 Git으로 공유한다.
 
 ## 절차

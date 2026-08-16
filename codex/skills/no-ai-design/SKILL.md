@@ -5,6 +5,10 @@ description: "LLM은 설계를 못한다"는 통념을 반영한 설계 게이�
 
 # no-ai-design
 
+<!-- usage-stats: skill no-ai-design -->
+
+첫 동작으로 `python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record skill no-ai-design >/dev/null 2>&1 || true`를 이 발동에서 한 번만 실행한다.
+
 전제: **LLM은 설계를 잘 못한다.** 그래서 아키텍처/추상화/구조 같은 **설계 결정은 사람이 주도**하고, LLM은 결정점을 드러내고 옵션을 정리해 사람의 선택을 받은 뒤, 그 틀 안에서 **구현/검증만** 한다.
 
 이 스킬은 구현 전에 설계 결정점을 추출해 사람에게 선택을 받고, 합의된 설계를 노트로 남긴 뒤, 그 틀 안에서만 구현하도록 강제하는 **설계 게이트**다.

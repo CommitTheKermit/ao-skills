@@ -5,6 +5,10 @@ description: Codex.ai/design 핸드오프 링크(`Codex.ai/design/p/<uuid>` 또�
 
 # Codex-design-handoff
 
+<!-- usage-stats: skill Codex-design-handoff -->
+
+첫 동작으로 `python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record skill Codex-design-handoff >/dev/null 2>&1 || true`를 이 발동에서 한 번만 실행한다.
+
 Codex.ai/design 에서 만든 시안의 핸드오프 링크를 받아, **`DesignSync` 도구로 번들에 직접 접근해 시안과 정확히 동기화**해 프로젝트의 디자인 소스를 최신화한다. 텍스트 설명만으로 추측 구현하지 않는다.
 
 ## 발동 조건

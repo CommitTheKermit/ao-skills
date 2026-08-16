@@ -46,6 +46,10 @@ for skill_dir in "$source_skills"/*; do
   [ -f "$skill_dir/SKILL.md" ] || continue
   skill_name="$(sed -n 's/^name:[[:space:]]*//p' "$skill_dir/SKILL.md" | head -1)"
   [ -n "$skill_name" ] || { echo "Missing skill name: $skill_dir" >&2; exit 1; }
+  rg -q -F "usage-stats: skill $skill_name" "$skill_dir/SKILL.md" \
+    || { echo "Missing usage-stats marker: $skill_dir" >&2; exit 1; }
+  rg -q -F "record skill $skill_name" "$skill_dir/SKILL.md" \
+    || { echo "Missing usage-stats recorder: $skill_dir" >&2; exit 1; }
 done
 
 echo "Codex skill verification passed"

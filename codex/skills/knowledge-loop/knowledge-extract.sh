@@ -1,6 +1,9 @@
 #!/bin/bash
 # SessionEnd 훅: Codex 세션에서 지식 후보를 추출해 ~/.Codex/knowledge/pending.md에 적재
 
+# usage-stats: hook knowledge-extract
+python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record hook knowledge-extract >/dev/null 2>&1 || true
+
 # 추출용 헤드리스 세션이 다시 훅을 타는 재귀 방지
 [ -n "$CODEX_KNOWLEDGE_EXTRACT" ] && exit 0
 

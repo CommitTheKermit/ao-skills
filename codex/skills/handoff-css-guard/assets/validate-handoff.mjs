@@ -15,6 +15,7 @@
 
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve, basename } from "node:path";
 
@@ -22,6 +23,9 @@ const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const FRONTEND_ROOT = resolve(SCRIPT_DIR, "..");
 const REPO_ROOT = resolve(FRONTEND_ROOT, "..");
 const SRC_ROOT = join(FRONTEND_ROOT, "src");
+
+// usage-stats: harness validate-handoff
+spawnSync("python3", [join(homedir(), ".agents/skills/usage-stats/scripts/usage_stats.py"), "record", "harness", "validate-handoff"], { stdio: "ignore" });
 
 const args = process.argv.slice(2);
 const liveIdx = args.indexOf("--live");

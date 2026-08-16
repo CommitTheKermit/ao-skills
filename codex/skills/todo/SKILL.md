@@ -5,6 +5,10 @@ description: 전역 ~/.Codex/todo.md 한 파일에 모든 TODO 를 저장하되 
 
 # todo
 
+<!-- usage-stats: skill todo -->
+
+첫 동작으로 `python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record skill todo >/dev/null 2>&1 || true`를 이 발동에서 한 번만 실행한다.
+
 세션 시작 시 자동 표시되는 TODO 파일을 **정해진 포맷 그대로** 편집한다. 표시·아카이브는 번들된 훅 스크립트 `todo-session.py` 가 담당하므로, 이 스킬은 **항목 등록/완료/삭제/조회**만 한다.
 
 ## 대상 파일 (단 하나)

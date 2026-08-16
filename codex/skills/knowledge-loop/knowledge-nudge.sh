@@ -2,6 +2,9 @@
 # SessionStart 훅: pending 지식 후보가 일정량 쌓이면 /knowledge-loop 승격 리뷰를 권한다.
 # 쿨다운(기본 3시간)으로 매 세션 반복 안내를 막는다. 승격(수동)이 잊혀 후보만 쌓이는 것을 방지. (Fix 1)
 
+# usage-stats: hook knowledge-nudge
+python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record hook knowledge-nudge >/dev/null 2>&1 || true
+
 KNOW_DIR="$HOME/.Codex/knowledge"
 PENDING="$KNOW_DIR/pending.md"
 STAMP="$KNOW_DIR/.nudge-stamp"

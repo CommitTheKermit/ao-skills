@@ -5,6 +5,10 @@ description: 구현 작업을 검증 가능한 작은 단계로 나누고, 각 �
 
 # Step by Step
 
+<!-- usage-stats: skill step-by-step -->
+
+첫 동작으로 `python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record skill step-by-step >/dev/null 2>&1 || true`를 이 발동에서 한 번만 실행한다.
+
 한 번에 한 단계만 진행한다. 각 단계는 독립적으로 검증 가능해야 하며, 다음 단계는 사용자의
 승인 전까지 구현하지 않는다.
 

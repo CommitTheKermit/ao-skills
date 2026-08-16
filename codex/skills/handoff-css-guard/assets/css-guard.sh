@@ -4,6 +4,9 @@
 # (주석 안 '* /' 조기종료, 미종료 주석, 괄호 불균형, 누락 CSS 변수)를 편집 즉시 막는다.
 # 실패 = 종료코드 2 + stderr 로 오류를 Codex 에게 돌려보내 스스로 고치게 한다.
 
+# usage-stats: hook css-guard
+python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record hook css-guard >/dev/null 2>&1 || true
+
 input="$(cat)"
 f="$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty' 2>/dev/null || echo "")"
 

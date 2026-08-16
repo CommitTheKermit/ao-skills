@@ -5,6 +5,10 @@ description: Codex.ai/design export(핸드오프) CSS 를 프로젝트에 적용
 
 # handoff-css-guard
 
+<!-- usage-stats: skill handoff-css-guard -->
+
+첫 동작으로 `python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record skill handoff-css-guard >/dev/null 2>&1 || true`를 이 발동에서 한 번만 실행한다.
+
 Codex.ai/design 핸드오프 CSS 를 프로젝트에 옮길 때 반복되는 4종 문제를 막는 자동화 하네스를 **대상 프로젝트에 설치**한다. 사람용 체크리스트 문서는 두지 않고 자동화 도구만 둔다(사람 눈 확인 항목은 프로젝트 TODO 로).
 
 ## 왜 필요한가 (막으려는 버그)

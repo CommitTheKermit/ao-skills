@@ -6,6 +6,10 @@ disable-model-invocation: true
 
 # knowledge-loop: 지식 추출-승격 루프
 
+<!-- usage-stats: skill knowledge-loop -->
+
+첫 동작으로 `python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record skill knowledge-loop >/dev/null 2>&1 || true`를 이 발동에서 한 번만 실행한다.
+
 Hermes Agent 패턴의 변형. **추출은 자동(SessionEnd 훅), 승격은 수동(이 스킬)**.
 자동 반영을 금지해 잘못된 가설이 AGENTS.md를 오염시키는 것을 막는다.
 

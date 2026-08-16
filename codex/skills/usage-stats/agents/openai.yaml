@@ -1,0 +1,4 @@
+interface:
+  display_name: "Usage Stats"
+  short_description: "개인 스킬·훅·하네스의 전역 사용 횟수 조회"
+  default_prompt: "Use $usage-stats to show my personal skill, hook, and harness usage counts."

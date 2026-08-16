@@ -5,6 +5,10 @@ description: 버그나 문제를 고치기 전에 근본 원인을 코드 근거
 
 # yfix
 
+<!-- usage-stats: skill yfix -->
+
+첫 동작으로 `python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record skill yfix >/dev/null 2>&1 || true`를 이 발동에서 한 번만 실행한다.
+
 버그나 문제를 **곧장 고치지 않고**, 먼저 (1) 왜 그렇게 동작하는지 근본 원인을 코드 근거와 함께 설명하고, (2) 해결책 후보들을 트레이드오프로 비교한 뒤, (3) 사용자에게 어느 방향으로 갈지 선택을 묻는다. 실제 코드 수정은 사용자가 방향을 고른 뒤 **이 스킬 밖의 일반 대화 흐름**에서 진행한다.
 
 ## 책임 경계 (반드시 지킬 것)
