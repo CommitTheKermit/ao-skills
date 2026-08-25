@@ -185,55 +185,18 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 | `/step-by-step` | 구현을 작은 단계로 쪼개 단계마다 검증·보고·승인을 거치며 진행 (코드 작성은 코덱스 위임) |
 | `/ao-skill-update` | 스킬/커맨드 변경 + 전역 동기화 + 커밋 + 푸시 |
 
-## 최근 변경내역 (2026-W33)
+## 최근 변경내역 (2026-W35)
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 의 주차별 파일 참조. (주가 바뀌면 이 섹션 항목을 `changelog/<직전 주차>.md`로 옮긴다.)
 
-### 2026-08-16 - Codex 개인 스킬·훅·하네스 전역 사용량 계측
-- 기존: 어떤 개인 자동화가 실제로 자주 쓰이는지 확인할 공통 기록이 없음
-- 변경: Codex 개인 스킬 14개, 훅 5개, 하네스 3개가 실행 시 전역 카운터를 올리고, `usage-stats` 스킬이 미사용 항목을 포함한 횟수·최초·최근 사용 시각을 조회
-- 이유: 유지할 자동화와 정리할 자동화를 실제 사용 데이터로 구분하기 위해
-- 영향 파일: `codex/skills/`, `codex/verify.sh`, `README.md`
-
-### 2026-08-14 - Claude와 Codex 스킬 원본·설치 경로 분리
-- 기존: Claude용 `skills/`를 `~/.Codex/skills/`에도 복사해 동일 이름의 Codex 스킬과 충돌하고 `.claude` 데이터·도구를 잘못 사용
-- 변경: `codex/skills/`, `codex/commands/`를 별도 원본으로 두고 `codex/sync.sh`가 `~/.agents/skills/`와 `~/.Codex/commands/`에 설치하며 레거시 중복 사본을 제거. `codex/verify.sh`로 Claude 전용 참조와 중복 이름을 차단
-- 이유: Codex에서 `/todo`가 `~/.claude/todo.md`를 읽은 실제 충돌을 모든 ao-skills에서 재발하지 않게 하기 위해
-- 영향 파일: `codex/`, `README.md`
-
-### 2026-08-14 - `step-by-step` 보고에 전체 진행 단계 표시
-- 기존: 완료한 단계와 바로 다음 단계만 보고
-- 변경: 완료 섹션 위에 완료·다음·남은 전체 단계 체크리스트를 표시하고, Codex 전역 사본만 있던 스킬을 원본 저장소에 등록
-- 이유: 매 단계 보고에서 전체 진행 위치와 남은 범위를 한눈에 확인하기 위해
-- 영향 파일: `skills/step-by-step/SKILL.md`, `skills/step-by-step/agents/openai.yaml`, `commands/step-by-step.md`, `README.md`
-
-### 2026-08-11 - `step-by-step` 구현 단계를 코덱스 위임으로 전환
-- 기존: 3단계 "구현"을 클로드가 직접 수행
-- 변경: 3단계를 `codex exec` 위임으로 바꾸고, 1단계 예고를 그대로 코덱스 스펙으로 넘기게 함. 위임 후 `git diff` 검토를 의무화하고, 위임하지 않는 예외(한 줄 수정·미세 교정·2연속 실패)와 사전 세팅 표(권한 허용·샌드박스·승인·작업 루트·출력 처리)를 추가
-- 이유: 코드 생성은 코덱스, 설계·검토·질문은 클로드로 역할을 나누기 위해
-- 영향 파일: `commands/step-by-step.md`, `README.md`
-
-### 2026-08-11 - 신규 추가: `step-by-step`
-- 종류: 커맨드
-- 목적: 구현 작업을 검증 가능한 작은 단계로 쪼개고, 단계마다 완료/다음을 구분선으로 보고하며, 미결정 사항을 다음 단계로 넘기기 전에 AskUserQuestion 으로 해소
-- 영향 파일: `commands/step-by-step.md`, `README.md`
-
-### 2026-08-10 - 신규 추가: `check-android-review-readiness`
-- 종류: 스킬
-- 목적: 최신 공식 정책·프로젝트 검사·누적 실패 사례로 Google Play 심사 준비 상태 판정
-- 영향 파일: `skills/check-android-review-readiness/SKILL.md`, `skills/check-android-review-readiness/agents/openai.yaml`, `README.md`
-
-### 2026-08-10 - 신규 추가: `record-android-review-failure`
-- 종류: 스킬
-- 목적: 사용자 제보 Android 심사 실패 요소를 정규화해 Git 기반 공용 사례집에 축적
-- 영향 파일: `skills/record-android-review-failure/SKILL.md`, `skills/record-android-review-failure/references/failure-cases.md`, `skills/record-android-review-failure/agents/openai.yaml`, `README.md`
-
-### 2026-08-10 - 신규 추가: `build-signed-aab`
-- 종류: 스킬
-- 목적: Android 앱의 테스트·release bundle 빌드·서명·manifest·런처 아이콘을 한 번에 검증하고 Play 제출용 버전명 AAB로 보관
-- 영향 파일: `skills/build-signed-aab/SKILL.md`, `skills/build-signed-aab/scripts/build-signed-aab.sh`, `skills/build-signed-aab/agents/openai.yaml`, `README.md`
+### 2026-08-25 - Pencil execute 스크린샷 가드 호환
+- 기존: 함수 오케스트레이터 환경에서 Pencil `execute`의 PostToolUse가 전달되지 않아, `TakeScreenshot`을 실행해도 UI 패치가 차단됨
+- 변경: `TakeScreenshot` 대상 요청을 PreToolUse에서도 기록하고, 디자인 가드를 `codex/hooks/` 원본에서 전역 훅 경로로 동기화하며 자체 검증에 포함
+- 이유: 현재 Pencil API와 가드가 같은 디자인 검증 증거를 사용하도록 맞추기 위해
+- 영향 파일: `codex/hooks/chaekchaek-design-system-guard.py`, `codex/sync.sh`, `codex/verify.sh`, `README.md`
 
 ### 지난 변경내역
+- [`2026-W33`](changelog/2026-W33.md) - 2026-08-10 ~ 08-16
 - [`2026-W26`](changelog/2026-W26.md) - 2026-06-22 ~ 06-28
 - [`2026-W25`](changelog/2026-W25.md) - 2026-06-15 ~ 06-21
 - [`2026-W24`](changelog/2026-W24.md) - 2026-06-08 ~ 06-14

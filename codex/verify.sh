@@ -3,6 +3,7 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source_skills="$repo_root/codex/skills"
+design_guard="$repo_root/codex/hooks/chaekchaek-design-system-guard.py"
 
 bad_refs="$(rg -n -i --glob 'SKILL.md' --glob '*.md' --glob '*.py' --glob '*.sh' --glob '!verify.sh' \
   '(~/.claude|\.claude/|CLAUDE\.md|CLAUDE_PROJECT_DIR|AskUserQuestion|codex exec.+위임)' \
@@ -51,5 +52,11 @@ for skill_dir in "$source_skills"/*; do
   rg -q -F "record skill $skill_name" "$skill_dir/SKILL.md" \
     || { echo "Missing usage-stats recorder: $skill_dir" >&2; exit 1; }
 done
+
+rg -q -F "usage-stats: hook chaekchaek-design-system-guard" "$design_guard" \
+  || { echo "Missing usage-stats marker: $design_guard" >&2; exit 1; }
+rg -q -F '"hook",' "$design_guard" \
+  || { echo "Missing usage-stats recorder: $design_guard" >&2; exit 1; }
+python3 "$design_guard" --self-test
 
 echo "Codex skill verification passed"

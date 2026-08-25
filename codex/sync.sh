@@ -4,11 +4,13 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source_skills="$repo_root/codex/skills"
 source_commands="$repo_root/codex/commands"
+source_hooks="$repo_root/codex/hooks"
 agent_skills="$HOME/.agents/skills"
 codex_commands="$HOME/.Codex/commands"
+codex_hooks="$HOME/.codex/hooks"
 legacy_skills="$HOME/.Codex/skills"
 
-mkdir -p "$agent_skills" "$codex_commands"
+mkdir -p "$agent_skills" "$codex_commands" "$codex_hooks"
 
 for source_dir in "$source_skills"/*; do
   [ -d "$source_dir" ] || continue
@@ -29,6 +31,8 @@ for source_dir in "$source_skills"/*; do
 done
 
 cp "$source_commands"/*.md "$codex_commands/"
+cp "$source_hooks"/*.py "$codex_hooks/"
 
 echo "Codex skills synced to $agent_skills"
 echo "Codex commands synced to $codex_commands"
+echo "Codex hooks synced to $codex_hooks"
