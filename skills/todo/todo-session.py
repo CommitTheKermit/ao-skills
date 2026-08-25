@@ -6,7 +6,7 @@
     todo-session.py end     # SessionEnd 훅: 완료 항목 날짜 스탬프만 수행
 
 대상 파일:
-    - 전역 단일 파일: ~/.claude/todo.md  (모든 항목이 여기 한 곳에 저장된다)
+    - Claude/Codex 공유 파일: ~/.Codex/todo.md  (모든 항목이 여기 한 곳에 저장된다)
 
 파일 구조:
     # TODO
@@ -64,7 +64,7 @@ def _project_dir(payload):
 
 
 def _global_todo():
-    return os.path.join(os.path.expanduser("~"), ".claude", "todo.md")
+    return os.path.join(os.path.expanduser("~"), ".Codex", "todo.md")
 
 
 def _split_active_archive(lines):
@@ -215,7 +215,7 @@ def collect_display(path, cwd_abs):
 
 
 def _last_access_path():
-    return os.path.join(os.path.expanduser("~"), ".claude", ".todo-last-access")
+    return os.path.join(os.path.expanduser("~"), ".Codex", ".todo-last-access")
 
 
 def _read_last_access():
@@ -280,12 +280,12 @@ def run_start(payload):
     else:
         parts.append("(현재 프로젝트/공통 미완료 TODO 없음)")
     parts.append(
-        "TODO 관리: 모든 항목은 전역 ~/.claude/todo.md 한 파일에 저장되며 "
+        "TODO 관리: Claude와 Codex가 공유하는 전역 ~/.Codex/todo.md 한 파일에 저장되며 "
         "'## 공통' 과 '## <프로젝트 절대경로>' 섹션으로 분류됩니다. 추가 기본값은 현재 "
         "프로젝트 섹션이고, '공통/전역'이라고 하면 공통 섹션에 넣습니다. 완료(- [x]) 항목은 "
         "원래 프로젝트 섹션에 그대로 남고(별도 아카이브로 이동하지 않음), 세션 시작/종료 시 "
         "완료 날짜((done ...))가 자동으로 기록됩니다. 항목 끝의 (ctx: ...) 는 그 투두의 문맥 "
-        "파일 경로(~/.claude/todo-context/ 기준)입니다. 해당 투두를 작업할 때 먼저 읽으세요."
+        "파일 경로(~/.Codex/todo-context/ 기준)입니다. 해당 투두를 작업할 때 먼저 읽으세요."
     )
     parts.append(
         "완료 자동 제안: 사용자가 '완료'라고 말하지 않아도, 이번 프롬프트로 시작한 작업이 "

@@ -31,7 +31,7 @@ ao-skills/
 │   │   └── references/failure-cases.md
 │   ├── step-by-step/        # Codex용 단계별 구현·검증 워크플로우 스킬
 │   │   └── SKILL.md
-│   └── todo/                # 프로젝트별/전역 TODO 관리 스킬 (+ 세션 훅)
+│   └── todo/                # Claude/Codex 공유 TODO 관리 스킬 (+ 세션 훅)
 │       ├── SKILL.md
 │       └── todo-session.py
 ├── commands/
@@ -153,7 +153,7 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 발동 표현: "$step-by-step", "/step-by-step", "한 단계씩 구현해줘" 등.
 
 ### todo
-프로젝트별/전역 TODO 를 등록·완료·조회·삭제하고, 항목별 문맥 파일을 연결한다. Claude는 `~/.claude/todo.md`, Codex는 `~/.Codex/todo.md`를 사용하며 각 플랫폼 전용 스킬과 훅이 해당 파일만 읽는다.
+프로젝트별/전역 TODO 를 등록·완료·조회·삭제하고, 항목별 문맥 파일을 연결한다. Claude와 Codex 모두 `~/.Codex/todo.md`와 `~/.Codex/todo-context/`를 사용하므로 어느 환경에서든 같은 항목과 문맥을 읽고 수정한다.
 
 발동 표현: "todo/투두 추가", "할 일 등록", "todo/투두 완료/체크", "todo/투두 목록", "/todo" 등.
 
@@ -188,6 +188,12 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 ## 최근 변경내역 (2026-W35)
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 의 주차별 파일 참조. (주가 바뀌면 이 섹션 항목을 `changelog/<직전 주차>.md`로 옮긴다.)
+
+### 2026-08-25 - Claude와 Codex 투두 저장소 통합
+- 기존: Claude와 Codex가 각각 `~/.claude/todo.md`, `~/.Codex/todo.md`를 사용해 투두가 분리됨
+- 변경: 양쪽 todo 스킬과 세션 훅이 `~/.Codex/todo.md`와 `~/.Codex/todo-context/`를 공유
+- 이유: 어느 실행 환경에서든 같은 프로젝트 투두와 문맥을 바로 조회하고 수정하기 위해
+- 영향 파일: `skills/todo/SKILL.md`, `skills/todo/todo-session.py`, `codex/skills/todo/SKILL.md`, `codex/skills/todo/todo-session.py`, `README.md`
 
 ### 2026-08-25 - Pencil execute 스크린샷 가드 호환
 - 기존: 함수 오케스트레이터 환경에서 Pencil `execute`의 PostToolUse가 전달되지 않아, `TakeScreenshot`을 실행해도 UI 패치가 차단됨
