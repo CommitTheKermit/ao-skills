@@ -57,6 +57,8 @@ rg -q -F "usage-stats: hook chaekchaek-design-system-guard" "$design_guard" \
   || { echo "Missing usage-stats marker: $design_guard" >&2; exit 1; }
 rg -q -F '"hook",' "$design_guard" \
   || { echo "Missing usage-stats recorder: $design_guard" >&2; exit 1; }
+rg -q -F 'functions\\.exec' "$repo_root/codex/sync.sh" \
+  || { echo "Missing functions.exec design guard matcher sync" >&2; exit 1; }
 python3 "$design_guard" --self-test
 
 echo "Codex skill verification passed"

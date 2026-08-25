@@ -86,9 +86,16 @@ def screenshot_node_ids(payload: dict) -> list[str]:
     return [node_id for call in calls for node_id in re.findall(r"['\"]([^'\"]+)['\"]", call)]
 
 
-def record_target_screenshot(payload: dict) -> None:
+def targets_designs_pen(payload: dict) -> bool:
     tool_input = payload.get("tool_input") or {}
-    if Path(str(tool_input.get("filePath", ""))).name != "designs.pen":
+    if Path(str(tool_input.get("filePath", ""))).name == "designs.pen":
+        return True
+    source = str(tool_input.get("input", ""))
+    return "mcp__pencil__execute" in source and "designs.pen" in source
+
+
+def record_target_screenshot(payload: dict) -> None:
+    if not targets_designs_pen(payload):
         return
     node_id = next((value for value in screenshot_node_ids(payload) if value not in {"document", "SxMn5"}), "")
     if not node_id:
@@ -123,6 +130,7 @@ def self_test() -> None:
     assert classify_patch("*** Update File: backend/README.md\n+설명") == (False, False)
     assert classify_patch("*** Update File: designs.pen\n+raw") == (True, False)
     assert screenshot_node_ids({"tool_input": {"input": "TakeScreenshot(['target'])"}}) == ["target"]
+    assert targets_designs_pen({"tool_input": {"input": "tools.mcp__pencil__execute({filePath:'/tmp/designs.pen',input:`TakeScreenshot(['target'])`})"}})
     assert is_chaekchaek_path(PROJECT_ROOT / "android")
     assert not is_chaekchaek_path(PROJECT_ROOT.parent)
     print("design_system_guard: ok")
@@ -137,7 +145,7 @@ def main() -> None:
     payload = json.load(sys.stdin)
     event = payload.get("hook_event_name")
     tool_name = payload.get("tool_name")
-    if event == "PostToolUse" and tool_name in {"mcp__pencil__get_screenshot", "mcp__pencil__execute"}:
+    if event == "PostToolUse" and tool_name in {"mcp__pencil__get_screenshot", "mcp__pencil__execute", "functions.exec"}:
         record_target_screenshot(payload)
         return
 
@@ -153,9 +161,9 @@ def main() -> None:
             deny("UI 구현 차단: 이 작업 턴에서 designs.pen의 대상 시안을 먼저 만들거나 확인하고, SxMn5/document가 아닌 대상 노드 스크린샷을 검증하세요.")
         return
 
-    if tool_name != "mcp__pencil__execute":
+    if tool_name not in {"mcp__pencil__execute", "functions.exec"}:
         return
-    if Path(str(tool_input.get("filePath", ""))).name != "designs.pen":
+    if not targets_designs_pen(payload):
         return
 
     snippets = [str(tool_input.get("input", ""))]

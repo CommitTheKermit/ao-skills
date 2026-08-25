@@ -189,6 +189,12 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 의 주차별 파일 참조. (주가 바뀌면 이 섹션 항목을 `changelog/<직전 주차>.md`로 옮긴다.)
 
+### 2026-08-25 - 함수 오케스트레이터 Pencil 가드 연결
+- 기존: 디자인 가드 훅 매처가 Pencil 직접 호출만 받아 `functions.exec` 안의 Pencil 검증을 관찰하지 못함
+- 변경: 래퍼 입력의 `designs.pen` 대상과 `TakeScreenshot`을 판별하고, 동기화 시 기존 가드 매처에 `functions.exec`를 추가
+- 이유: 현재 Codex 도구 노출 방식에서도 디자인 검증과 UI 패치가 같은 턴 상태를 공유하도록 하기 위해
+- 영향 파일: `codex/hooks/chaekchaek-design-system-guard.py`, `codex/sync.sh`, `codex/verify.sh`, `README.md`
+
 ### 2026-08-25 - Pencil 스크린샷 기록 경로 보정
 - 기존: 함수 오케스트레이터의 Pencil 호출은 작업 경로가 Android 루트로 전달되지 않아, 대상 스크린샷을 찍어도 가드 상태가 기록되지 않음
 - 변경: `designs.pen` 대상 스크린샷의 PostToolUse 기록을 프로젝트 경로 검사보다 먼저 처리
