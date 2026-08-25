@@ -189,6 +189,12 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 의 주차별 파일 참조. (주가 바뀌면 이 섹션 항목을 `changelog/<직전 주차>.md`로 옮긴다.)
 
+### 2026-08-25 - Pencil 스크린샷 기록 경로 보정
+- 기존: 함수 오케스트레이터의 Pencil 호출은 작업 경로가 Android 루트로 전달되지 않아, 대상 스크린샷을 찍어도 가드 상태가 기록되지 않음
+- 변경: `designs.pen` 대상 스크린샷의 PostToolUse 기록을 프로젝트 경로 검사보다 먼저 처리
+- 이유: 검증된 Pencil 스크린샷을 중첩 도구 환경에서도 같은 작업 턴의 UI 구현 근거로 인정하기 위해
+- 영향 파일: `codex/hooks/chaekchaek-design-system-guard.py`, `README.md`
+
 ### 2026-08-25 - Pencil execute 스크린샷 가드 호환
 - 기존: 함수 오케스트레이터 환경에서 Pencil `execute`의 PostToolUse가 전달되지 않아, `TakeScreenshot`을 실행해도 UI 패치가 차단됨
 - 변경: `TakeScreenshot` 대상 요청을 PreToolUse에서도 기록하고, 디자인 가드를 `codex/hooks/` 원본에서 전역 훅 경로로 동기화하며 자체 검증에 포함

@@ -135,13 +135,13 @@ def main() -> None:
 
     record_usage()
     payload = json.load(sys.stdin)
-    if not is_chaekchaek_path(payload.get("cwd") or Path.cwd()):
-        return
-
     event = payload.get("hook_event_name")
     tool_name = payload.get("tool_name")
     if event == "PostToolUse" and tool_name in {"mcp__pencil__get_screenshot", "mcp__pencil__execute"}:
         record_target_screenshot(payload)
+        return
+
+    if not is_chaekchaek_path(payload.get("cwd") or Path.cwd()):
         return
 
     tool_input = payload.get("tool_input") or {}
