@@ -125,7 +125,7 @@ Android 프로젝트와 Play Console 자료를 최신 Google 공식 정책 및 �
 개념/사양을 **출처 확인 없이 단정하는 환각**을 줄이는 훅 스크립트 번들(사용자 호출용 스킬 아님, `knowledge-loop` 와 같은 훅 컨테이너 패턴). `grounding-nudge.sh`(UserPromptSubmit)가 개념질문에 "출처부터 확인하라" 컨텍스트를 주입하고 이번 턴 플래그를 남기면, `verify-grounding.sh`(Stop)가 그 턴에 출처 도구 사용 흔적도 '추정/미확인' 표기도 없을 때 `exit 2`로 한 번 되돌려 보완을 요구한다. fail-open + `stop_hook_active` + 플래그 1회 소비로 최대 1회만 차단. `~/.claude/settings.json` 훅 등록은 동기화 범위 밖이라 수동(상세: `skills/grounding-guard/README.md`).
 
 ### knowledge-loop
-세션에서 자동 추출된 지식 후보를 리뷰해 CLAUDE.md 규칙/스킬/영구 문서로 승격하거나 폐기한다. 추출은 번들 훅 `knowledge-extract.sh`(SessionEnd, 머신별 1회 수동 등록)가 게이트(교정/커밋/긴 세션) 통과 시 haiku로 수행해 `~/.claude/knowledge/pending.md`에 적재하고, 승격은 이 스킬에서 사용자 승인으로만 진행한다. `disable-model-invocation: true`라 상시 토큰 비용 0, `/knowledge-loop`로 명시 호출.
+Codex 최신 user root JSONL 세션을 `replay-audit.py`로 익명 집계하고, 검증된 지식 후보만 AGENTS.md 규칙, 스킬, 영구 문서로 수동 승격한다. subagent, 주입 wrapper, heartbeat는 제외하며 원문, 경로, 세션 ID, 비밀값은 출력하지 않는다. 실시간 SessionEnd 추출은 replay 오탐 검증 전까지 등록하지 않는다.
 
 ### claude-design-handoff
 claude.ai/design 핸드오프 링크(`api.anthropic.com/v1/design/...`)를 받아 디자인 번들을 내려받고(gzip bin → gunzip+tar 압축해제), 번들의 README와 prod 산출물(`app-prod.jsx`/`styles-prod.css` 등)·`chats/` 트랜스크립트를 근거로 프로젝트의 디자인 소스를 시안과 정확히 동기화한다. 텍스트 설명만으로 추측 구현하지 않는다. 함께 온 구체적 변경 지시도 추가 반영.
@@ -188,6 +188,12 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 ## 최근 변경내역 (2026-W35)
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 의 주차별 파일 참조. (주가 바뀌면 이 섹션 항목을 `changelog/<직전 주차>.md`로 옮긴다.)
+
+### 2026-08-26 - Codex 반복 실패 예방 하네스 정리
+- 기존: 비밀값 훅은 평문 패턴만 검사했고 프로젝트 전용 가드가 전역에서 실행됐으며, knowledge-loop 자동화 문서가 실제 등록 상태와 달랐음
+- 변경: 자격값 덤프 차단, 변경 대상 soft nudge, 익명 세션 replay audit를 추가하고 `fix-emdash.py`를 제거했으며, Chaekchaek branch, PR, design guard를 프로젝트 `.codex` 전용으로 분리
+- 이유: 비밀값 노출, 작업 대상 오독, 검증 없는 완료, 프로젝트 가드 오탐을 최소 하네스로 줄이기 위해
+- 영향 파일: `codex/hooks/`, `codex/skills/knowledge-loop/`, `codex/sync.sh`, `codex/verify.sh`, `README.md`
 
 ### 2026-08-25 - 함수 오케스트레이터 Pencil 가드 연결
 - 기존: 디자인 가드 훅 매처가 Pencil 직접 호출만 받아 `functions.exec` 안의 Pencil 검증을 관찰하지 못함

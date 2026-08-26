@@ -13,6 +13,14 @@ cwd=$(echo "$input" | jq -r '.cwd // "?"')
 session_id=$(echo "$input" | jq -r '.session_id // "unknown"')
 [ -f "$transcript" ] || exit 0
 
+# 현재 Codex JSONL의 첫 session_meta가 사용자 root 세션인 경우만 처리한다.
+# fork transcript 안에 복제된 root meta가 있어도 subagent 세션 전체는 제외한다.
+is_root=$(jq -rs '
+  (first(.[] | select(.type=="session_meta")) | .payload) as $meta
+  | ($meta.thread_source=="user" and ($meta.parent_thread_id // "")=="" and (($meta.source | type)!="object"))
+' "$transcript" 2>/dev/null)
+[ "$is_root" = "true" ] || exit 0
+
 KNOW_DIR="$HOME/.Codex/knowledge"
 mkdir -p "$KNOW_DIR"
 STATE_FILE="$KNOW_DIR/.extract-state"
@@ -23,11 +31,12 @@ n_user=$(jq -rs '
     | select(.type=="response_item" and .payload.type=="message" and .payload.role=="user")
     | ([.payload.content[]? | select(.type=="input_text") | .text] | join("\n"))
     | select(. != null and (. | length) > 0)
+    | select((test("^(# AGENTS\\.md instructions|<developer|<environment_context>|<permissions|<collaboration_mode>|Message Type: (NEW_TASK|MESSAGE|FINAL_ANSWER))"; "i") or test("^\\s*<heartbeat>.*</heartbeat>\\s*$"; "is")) | not)
   ] | length
 ' "$transcript" 2>/dev/null)
 n_user=${n_user:-0}
 
-interrupts=$(grep -c 'Request interrupted by user' "$transcript" 2>/dev/null)
+interrupts=$(jq -rs '[.[] | select(.type=="event_msg" and .payload.type=="turn_aborted")] | length' "$transcript" 2>/dev/null)
 commits=$(grep -c 'git commit' "$transcript" 2>/dev/null)
 
 # 직전 추출 시점의 처리 위치(high-water mark). 같은 세션이 SessionEnd마다 재추출되며
@@ -51,6 +60,7 @@ sample=$(jq -rs --argjson hwm "$hwm" '
     | select(.type=="response_item" and .payload.type=="message" and .payload.role=="user")
     | ([.payload.content[]? | select(.type=="input_text") | .text] | join("\n"))
     | select(. != null and (. | length) > 0)
+    | select((test("^(# AGENTS\\.md instructions|<developer|<environment_context>|<permissions|<collaboration_mode>|Message Type: (NEW_TASK|MESSAGE|FINAL_ANSWER))"; "i") or test("^\\s*<heartbeat>.*</heartbeat>\\s*$"; "is")) | not)
   ]
   | .[$hwm:]
   | map(select(
@@ -60,6 +70,12 @@ sample=$(jq -rs --argjson hwm "$hwm" '
         ) | not
       ))
   | map(if (. | length) > 2000 then .[0:2000] + " …(생략)" else . end)
+  | map(
+      gsub("sk-ant-[A-Za-z0-9_-]{20,}"; "[REDACTED]")
+      | gsub("sk-[A-Za-z0-9]{32,}"; "[REDACTED]")
+      | gsub("gh[posru]_[A-Za-z0-9]{36,}"; "[REDACTED]")
+      | gsub("AKIA[0-9A-Z]{16}"; "[REDACTED]")
+    )
   | join("\n---\n")
 ' "$transcript" 2>/dev/null)
 # 마지막 15KB만 사용 (토큰 절약)
