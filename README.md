@@ -142,6 +142,11 @@ claude.ai/design export(핸드오프) CSS 를 옮길 때 빌드·`tsc`·`vitest`
 
 발동 표현: "release 커밋", "버전 커밋", "릴리스 커밋", "배포 커밋 정리" 등.
 
+### run-android-app
+Android 앱을 에뮬레이터나 연결 기기에 실행한다. 일반 실행에서는 `android run --debug`를 사용하지 않으며 사용자가 디버거 연결이나 브레이크포인트 실행을 명시한 경우에만 디버거 대기 모드를 사용한다.
+
+발동 표현: "앱 실행해줘", "에뮬레이터 띄워줘", "Android 앱 설치하고 실행" 등.
+
 ### record-android-review-failure
 사용자가 제공한 Play Console 거절 통지·스크린샷·설명에서 개인정보를 제거하고 실패 조건과 검출·예방 방법을 공용 사례집에 누적한 뒤 Git으로 공유한다. 중복 사례는 새로 만들지 않고 기존 항목을 보강한다.
 
@@ -185,35 +190,18 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 | `/step-by-step` | 구현을 작은 단계로 쪼개 단계마다 검증·보고·승인을 거치며 진행 (코드 작성은 코덱스 위임) |
 | `/ao-skill-update` | 스킬/커맨드 변경 + 전역 동기화 + 커밋 + 푸시 |
 
-## 최근 변경내역 (2026-W35)
+## 최근 변경내역 (2026-W36)
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 의 주차별 파일 참조. (주가 바뀌면 이 섹션 항목을 `changelog/<직전 주차>.md`로 옮긴다.)
 
-### 2026-08-26 - Codex 반복 실패 예방 하네스 정리
-- 기존: 비밀값 훅은 평문 패턴만 검사했고 프로젝트 전용 가드가 전역에서 실행됐으며, knowledge-loop 자동화 문서가 실제 등록 상태와 달랐음
-- 변경: 자격값 덤프 차단, 변경 대상 soft nudge, 익명 세션 replay audit를 추가하고 `fix-emdash.py`를 제거했으며, Chaekchaek branch, PR, design guard를 프로젝트 `.codex` 전용으로 분리
-- 이유: 비밀값 노출, 작업 대상 오독, 검증 없는 완료, 프로젝트 가드 오탐을 최소 하네스로 줄이기 위해
-- 영향 파일: `codex/hooks/`, `codex/skills/knowledge-loop/`, `codex/sync.sh`, `codex/verify.sh`, `README.md`
-
-### 2026-08-25 - 함수 오케스트레이터 Pencil 가드 연결
-- 기존: 디자인 가드 훅 매처가 Pencil 직접 호출만 받아 `functions.exec` 안의 Pencil 검증을 관찰하지 못함
-- 변경: 래퍼 입력의 `designs.pen` 대상과 `TakeScreenshot`을 판별하고, 동기화 시 기존 가드 매처에 `functions.exec`를 추가
-- 이유: 현재 Codex 도구 노출 방식에서도 디자인 검증과 UI 패치가 같은 턴 상태를 공유하도록 하기 위해
-- 영향 파일: `codex/hooks/chaekchaek-design-system-guard.py`, `codex/sync.sh`, `codex/verify.sh`, `README.md`
-
-### 2026-08-25 - Pencil 스크린샷 기록 경로 보정
-- 기존: 함수 오케스트레이터의 Pencil 호출은 작업 경로가 Android 루트로 전달되지 않아, 대상 스크린샷을 찍어도 가드 상태가 기록되지 않음
-- 변경: `designs.pen` 대상 스크린샷의 PostToolUse 기록을 프로젝트 경로 검사보다 먼저 처리
-- 이유: 검증된 Pencil 스크린샷을 중첩 도구 환경에서도 같은 작업 턴의 UI 구현 근거로 인정하기 위해
-- 영향 파일: `codex/hooks/chaekchaek-design-system-guard.py`, `README.md`
-
-### 2026-08-25 - Pencil execute 스크린샷 가드 호환
-- 기존: 함수 오케스트레이터 환경에서 Pencil `execute`의 PostToolUse가 전달되지 않아, `TakeScreenshot`을 실행해도 UI 패치가 차단됨
-- 변경: `TakeScreenshot` 대상 요청을 PreToolUse에서도 기록하고, 디자인 가드를 `codex/hooks/` 원본에서 전역 훅 경로로 동기화하며 자체 검증에 포함
-- 이유: 현재 Pencil API와 가드가 같은 디자인 검증 증거를 사용하도록 맞추기 위해
-- 영향 파일: `codex/hooks/chaekchaek-design-system-guard.py`, `codex/sync.sh`, `codex/verify.sh`, `README.md`
+### 2026-08-31 - Android 앱 일반 실행의 디버거 대기 방지
+- 기존: Android 앱 실행 시 `android run --debug`를 일반 실행에도 사용해 앱이 디버거 연결을 반복적으로 기다릴 수 있었음
+- 변경: 일반 실행에서 `--debug`를 금지하고 명시적 디버거 연결 요청에만 허용하는 `run-android-app` 스킬을 추가
+- 이유: debug APK 실행과 디버거 대기 옵션을 분리해 앱 실행 요청이 즉시 완료되도록 하기 위해
+- 영향 파일: `codex/skills/run-android-app/SKILL.md`, `README.md`, `changelog/2026-W35.md`
 
 ### 지난 변경내역
+- [`2026-W35`](changelog/2026-W35.md) - 2026-08-24 ~ 08-30
 - [`2026-W33`](changelog/2026-W33.md) - 2026-08-10 ~ 08-16
 - [`2026-W26`](changelog/2026-W26.md) - 2026-06-22 ~ 06-28
 - [`2026-W25`](changelog/2026-W25.md) - 2026-06-15 ~ 06-21
