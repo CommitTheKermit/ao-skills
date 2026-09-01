@@ -121,6 +121,11 @@ Android 프로젝트와 Play Console 자료를 최신 Google 공식 정책 및 �
 
 발동 표현: "안드로이드 심사 통과할까", "Play 심사 테스트", "출시 전 정책 점검", "리젝 위험 검사" 등.
 
+### claudex
+클로드가 의도 확인·설계·검토·질문을 맡고 **파일 작성은 `codex exec` 에 위임**하는 모드를 켜고 끈다. `claudex-guard.py`(PreToolUse)가 플래그 파일 `~/.claude/claudex` 가 있을 때만 `Edit`·`Write`·`NotebookEdit` 과 Bash 의 파일 쓰기(`sed -i`, `tee`, 소스 파일 리다이렉트, 파일 heredoc)를 `deny` 하고, 차단 이유로 위임 절차 전문을 되돌려준다. 코덱스가 막히면 `NEEDS_INPUT:` 으로 멈추고 클로드가 `AskUserQuestion` 으로 사용자에게 옮긴 뒤 `codex exec resume --last` 로 이어붙여, 사용자가 코덱스 터미널을 열 일이 없다. 플래그가 없으면 훅은 첫 줄에서 통과하므로 기본은 꺼짐. `~/.claude/settings.json` 훅 등록은 동기화 범위 밖이라 수동.
+
+발동 표현: `/claudex`, `/claudex on|off|status` (`disable-model-invocation: true`).
+
 ### grounding-guard
 개념/사양을 **출처 확인 없이 단정하는 환각**을 줄이는 훅 스크립트 번들(사용자 호출용 스킬 아님, `knowledge-loop` 와 같은 훅 컨테이너 패턴). `grounding-nudge.sh`(UserPromptSubmit)가 개념질문에 "출처부터 확인하라" 컨텍스트를 주입하고 이번 턴 플래그를 남기면, `verify-grounding.sh`(Stop)가 그 턴에 출처 도구 사용 흔적도 '추정/미확인' 표기도 없을 때 `exit 2`로 한 번 되돌려 보완을 요구한다. fail-open + `stop_hook_active` + 플래그 1회 소비로 최대 1회만 차단. `~/.claude/settings.json` 훅 등록은 동기화 범위 밖이라 수동(상세: `skills/grounding-guard/README.md`).
 
@@ -193,6 +198,11 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 ## 최근 변경내역 (2026-W36)
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 의 주차별 파일 참조. (주가 바뀌면 이 섹션 항목을 `changelog/<직전 주차>.md`로 옮긴다.)
+
+### 2026-09-01 - 신규 추가: `claudex`
+- 종류: 스킬
+- 목적: 설계·질문·검토는 클로드, 파일 작성은 코덱스로 갈라 한 세션 안에서 굴리는 위임 모드를 훅으로 강제하고 `/claudex` 로 토글
+- 영향 파일: `skills/claudex/SKILL.md`, `skills/claudex/claudex-guard.py`, `README.md`
 
 ### 2026-08-31 - Android 앱 일반 실행의 디버거 대기 방지
 - 기존: Android 앱 실행 시 `android run --debug`를 일반 실행에도 사용해 앱이 디버거 연결을 반복적으로 기다릴 수 있었음
