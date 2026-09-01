@@ -16,6 +16,8 @@ ao-skills/
 │   ├── handoff-css-guard/   # 핸드오프 CSS 검증 하네스 설치 (css-guard 훅 + validate-handoff)
 │   │   ├── SKILL.md
 │   │   └── assets/          # css-guard.mjs · validate-handoff.mjs · css-guard.sh · stylelintrc.json
+│   ├── github-pr-review/    # GitHub PR 검증 및 인라인 리뷰 코멘트 스킬
+│   │   └── SKILL.md
 │   ├── grounding-guard/     # 개념 출처 강제 훅 번들 (UserPromptSubmit+Stop, 호출용 스킬 아님)
 │   │   ├── README.md
 │   │   ├── lib.sh
@@ -142,6 +144,11 @@ claude.ai/design export(핸드오프) CSS 를 옮길 때 빌드·`tsc`·`vitest`
 
 발동 표현: "핸드오프 CSS 검증/가드 붙여줘", "디자인 export 적용 재발 방지 하네스", "css-guard 설치" 등.
 
+### github-pr-review
+GitHub PR의 전체 diff와 호출 경로, 관련 테스트를 검토하고 재현 가능한 문제만 변경 줄에 인라인 코멘트로 제출한다. 문제가 없으면 빈 리뷰를 만들지 않는다.
+
+발동 표현: "리뷰해줘", "PR 리뷰", "리뷰 돌려줘", "이상한 부분 코멘트해줘" 등.
+
 ### release-commit
 배포/릴리스 직후 남기는 release 커밋을 고정 포맷(`chore(release): vX.Y.Z 배포`)으로 작성한다. 직전 release 이후의 `git log`를 뽑아 변경 목록·배포 대상·버전 증감을 본문에 채워, 요약 한두 줄로 끝나 추적이 안 되는 빈약한 release 커밋을 막는다.
 
@@ -198,6 +205,12 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 ## 최근 변경내역 (2026-W36)
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 의 주차별 파일 참조. (주가 바뀌면 이 섹션 항목을 `changelog/<직전 주차>.md`로 옮긴다.)
+
+### 2026-09-01 - 신규 추가: `github-pr-review`
+- 기존: PR 리뷰 요청 시 결과 보고와 GitHub 인라인 코멘트 여부를 매번 별도로 지정해야 했음
+- 변경: 특정 PR 리뷰 요청만으로 재현 가능한 finding을 변경 줄에 `COMMENT` 리뷰로 제출
+- 이유: 리뷰 결과가 코드 문맥에 바로 남아 수정과 재검증으로 이어지게 하기 위해
+- 영향 파일: `codex/skills/github-pr-review/SKILL.md`, `README.md`
 
 ### 2026-09-01 - 신규 추가: `claudex`
 - 종류: 스킬
