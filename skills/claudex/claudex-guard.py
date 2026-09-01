@@ -24,7 +24,8 @@ BASH_WRITE = re.compile(
 REASON = (
     "claudex 모드: 파일을 만들고 고치는 일은 codex exec 에 위임한다.\n"
     "\n"
-    "  codex exec -C <프로젝트 루트> --sandbox workspace-write --approve-for-me - <<'SPEC' 2>&1 | tail -40\n"
+    "  codex exec -m gpt-5.6-terra -c model_reasoning_effort=high \\\n"
+    "    -C <프로젝트 루트> --sandbox workspace-write --approve-for-me - <<'SPEC' 2>&1 | tail -40\n"
     "  <스펙>\n"
     "  SPEC\n"
     "\n"
@@ -36,7 +37,7 @@ REASON = (
     "    NEEDS_INPUT: 으로 시작하는 질문 목록만 내고 멈춰라.\"\n"
     "\n"
     "NEEDS_INPUT 이 돌아오면 AskUserQuestion 으로 사용자에게 묻고,\n"
-    "답을 codex exec resume --last \"<답>\" 으로 이어붙인다. 사용자는 코덱스 터미널을 열지 않는다.\n"
+    "답을 codex exec resume --last -m gpt-5.6-terra -c model_reasoning_effort=high \"<답>\" 으로 이어붙인다. 사용자는 코덱스 터미널을 열지 않는다.\n"
     "끝나면 git diff 를 직접 읽고 검토한다. 코덱스가 \"했다\"고 한 말을 믿지 않는다.\n"
     "\n"
     "스펙 쓰는 비용이 코드 쓰는 비용보다 크면(오타, 한 줄 수정, 호출부 정리) 사용자에게\n"

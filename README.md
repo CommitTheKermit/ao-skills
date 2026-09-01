@@ -124,7 +124,7 @@ Android 프로젝트와 Play Console 자료를 최신 Google 공식 정책 및 �
 발동 표현: "안드로이드 심사 통과할까", "Play 심사 테스트", "출시 전 정책 점검", "리젝 위험 검사" 등.
 
 ### claudex
-클로드가 의도 확인·설계·검토·질문을 맡고 **파일 작성은 `codex exec` 에 위임**하는 모드를 켜고 끈다. `claudex-guard.py`(PreToolUse)가 플래그 파일 `~/.claude/claudex` 가 있을 때만 `Edit`·`Write`·`NotebookEdit` 과 Bash 의 파일 쓰기(`sed -i`, `tee`, 소스 파일 리다이렉트, 파일 heredoc)를 `deny` 하고, 차단 이유로 위임 절차 전문을 되돌려준다. 코덱스가 막히면 `NEEDS_INPUT:` 으로 멈추고 클로드가 `AskUserQuestion` 으로 사용자에게 옮긴 뒤 `codex exec resume --last` 로 이어붙여, 사용자가 코덱스 터미널을 열 일이 없다. 플래그가 없으면 훅은 첫 줄에서 통과하므로 기본은 꺼짐. `~/.claude/settings.json` 훅 등록은 동기화 범위 밖이라 수동.
+클로드가 의도 확인·설계·검토·질문을 맡고 **파일 작성은 `codex exec` 에 위임**하는 모드를 켜고 끈다. `claudex-guard.py`(PreToolUse)가 플래그 파일 `~/.claude/claudex` 가 있을 때만 `Edit`·`Write`·`NotebookEdit` 과 Bash 의 파일 쓰기(`sed -i`, `tee`, 소스 파일 리다이렉트, 파일 heredoc)를 `deny` 하고, 차단 이유로 위임 절차 전문을 되돌려준다. 코덱스가 막히면 `NEEDS_INPUT:` 으로 멈추고 클로드가 `AskUserQuestion` 으로 사용자에게 옮긴 뒤 `codex exec resume --last` 로 이어붙여, 사용자가 코덱스 터미널을 열 일이 없다. 위임 호출은 `-m gpt-5.6-terra -c model_reasoning_effort="high"` 로 고정한다. 플래그가 없으면 훅은 첫 줄에서 통과하므로 기본은 꺼짐. `~/.claude/settings.json` 훅 등록은 동기화 범위 밖이라 수동.
 
 발동 표현: `/claudex`, `/claudex on|off|status` (`disable-model-invocation: true`).
 
@@ -206,6 +206,12 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 - 변경: 특정 PR 리뷰 요청만으로 재현 가능한 finding을 변경 줄에 `COMMENT` 리뷰로 제출
 - 이유: 리뷰 결과가 코드 문맥에 바로 남아 수정과 재검증으로 이어지게 하기 위해
 - 영향 파일: `codex/skills/github-pr-review/SKILL.md`, `README.md`
+
+### 2026-09-01 - `claudex` 위임 호출에 모델·추론 강도 명시
+- 기존: `codex exec` 를 옵션 없이 불러 코덱스 기본값(`gpt-5.6-sol` / `model_reasoning_effort = "medium"`)으로 구현이 돌았다
+- 변경: 위임과 `resume` 호출 모두 `-m gpt-5.6-terra -c model_reasoning_effort="high"` 를 붙이도록 SKILL.md 와 훅의 차단 이유 문구를 갱신
+- 이유: 클로드가 의도를 확정하고 스펙까지 짜 준 뒤라 구현 쪽에 더 센 모델과 추론 강도를 쓰는 편이 낫다. 모델 ID 와 조합은 `codex exec -m gpt-5.6-terra -c model_reasoning_effort="high"` 실행으로 실측 확인
+- 영향 파일: `skills/claudex/SKILL.md`, `skills/claudex/claudex-guard.py`, `README.md`
 
 ### 2026-09-01 - `no-ai-design` 스킬 제거
 - 기존: `skills/no-ai-design/` 과 `codex/skills/no-ai-design/` 이 있었으나, frontmatter 의 `description` 값이 `"LLM은 설계를 못한다"는 ...` 으로 시작해 YAML quoted scalar 파싱에 실패했다 (`invalid YAML: did not find expected key at line 2 column 28`)
