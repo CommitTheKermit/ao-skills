@@ -179,11 +179,6 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 
 발동 표현: "/yfix", "왜 이렇게 동작해", "이거 왜 안 돼", "버그 고쳐줘", "어떻게 고칠지 비교해줘" 등.
 
-### no-ai-design
-"LLM은 설계를 못한다"는 통념을 반영한 설계 게이트. 새 모듈/기능 구현처럼 설계가 개입되는 작업에서, 구현 전에 설계 결정점(모듈/파일 경계·데이터 모델·공개 인터페이스·알고리즘/라이브러리/패턴)을 추출해 각 결정점마다 옵션 메뉴+트레이드오프를 제시하되 **최종 선택은 사람**이 `AskUserQuestion` 으로 하게 한다(LLM은 메뉴만, 단정 금지). 합의 설계를 설계 노트(`design/<주제>.md`)로 남기고 그 틀 안에서만 구현하며, 코딩 중 합의 안 된 새 설계 결정이 생기면 다시 멈춰 묻는다(구현 가드). 함수 내부/지역 구현은 LLM 자율, 사소·애매하면 "설계 점검할까요?"로 짧게 확인.
-
-발동 표현: "/no-ai-design", "설계 먼저", "구조부터 정하고", "아키텍처 정하자", "이 기능 어떻게 짤지" 등.
-
 ### usage-stats (Codex 전용)
 `ao-skills`가 관리하는 Codex 개인 스킬·훅·하네스의 사용 횟수와 최초·최근 사용 시각을 `~/.Codex/usage-stats.json`에 누적하고, 등록됐지만 아직 안 쓴 항목까지 함께 조회한다. 프롬프트와 프로젝트 경로는 저장하지 않는다.
 
@@ -211,6 +206,12 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 - 변경: 특정 PR 리뷰 요청만으로 재현 가능한 finding을 변경 줄에 `COMMENT` 리뷰로 제출
 - 이유: 리뷰 결과가 코드 문맥에 바로 남아 수정과 재검증으로 이어지게 하기 위해
 - 영향 파일: `codex/skills/github-pr-review/SKILL.md`, `README.md`
+
+### 2026-09-01 - `no-ai-design` 스킬 제거
+- 기존: `skills/no-ai-design/` 과 `codex/skills/no-ai-design/` 이 있었으나, frontmatter 의 `description` 값이 `"LLM은 설계를 못한다"는 ...` 으로 시작해 YAML quoted scalar 파싱에 실패했다 (`invalid YAML: did not find expected key at line 2 column 28`)
+- 변경: 레포의 두 사본과 `~/.claude/skills/`, `~/.agents/skills/` 사본을 모두 제거
+- 이유: Codex 세션이 시작될 때마다 스킬 로드 에러를 뱉고 있었고, 사용자가 이 스킬을 더 쓰지 않기로 했다
+- 영향 파일: `skills/no-ai-design/`, `codex/skills/no-ai-design/`, `README.md`
 
 ### 2026-09-01 - 신규 추가: `claudex`
 - 종류: 스킬

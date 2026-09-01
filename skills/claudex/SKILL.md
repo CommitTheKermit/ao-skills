@@ -135,6 +135,30 @@ codex exec resume --last "<사용자가 고른 답>" 2>&1 | tail -40
 python3 ~/.claude/skills/claudex/claudex-guard.py --selftest
 ```
 
+## 코덱스 쪽 하네싱은 그대로 적용된다
+
+`codex exec` 로 위임해도 코덱스에 설정해 둔 것들은 살아 있다. 2026-09-01 `codex-cli 0.151.0`
+에서 `codex exec -s read-only` 로 실측했다.
+
+| 항목 | 결과 | 확인 방법 |
+| --- | --- | --- |
+| 프로젝트 `AGENTS.md` | 적용 | 코덱스가 해당 파일의 문장을 그대로 인용 |
+| 전역 `~/.codex/AGENTS.md` | 적용 | 위와 같은 응답에서 확인 |
+| `~/.codex/config.toml` | 적용 | `--ignore-user-config` 를 주지 않는 한 로드된다 (`codex exec --help`) |
+| ponytail 등 플러그인 | 적용 | 코덱스가 "Ponytail full 모드 적용 중"이라고 응답 |
+| 스킬 | 적용 | 호출 가능한 스킬 이름을 나열함 |
+| MCP 서버 | 적용 | 실행 중 MCP 서버 토큰 갱신 로그가 stderr 에 찍힘 |
+| 훅 | **미확증** | 아래 |
+
+훅은 간접 근거만 있다. `~/.codex/config.toml` 의 `[hooks.state]` 에 `trusted_hash` 가
+저장되어 있고, `codex exec --help` 의 `--dangerously-bypass-hook-trust` 설명이 "persisted
+hook trust 없이 enabled 훅을 실행한다"라고 되어 있어 exec 가 훅을 실행함을 전제한다. 다만
+발동 조건 단어를 넣은 프롬프트와 뺀 대조군이 같은 응답을 내서 직접 관측에는 실패했다.
+**적용된다고 추정하되 실측은 아님.**
+
+따라서 위임한 작업의 커밋 규칙·문체 규칙은 코덱스 쪽 `AGENTS.md` 를 따른다. 클로드 쪽
+`CLAUDE.md` 와 내용이 어긋나 있으면 위임 결과도 어긋난다.
+
 ## 한계
 
 Bash 우회를 100% 막지는 못한다. `sed -i`, `tee`, 소스 파일로의 리다이렉트, 파일 heredoc은
