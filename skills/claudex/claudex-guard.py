@@ -24,10 +24,12 @@ BASH_WRITE = re.compile(
 REASON = (
     "claudex 모드: 파일을 만들고 고치는 일은 codex exec 에 위임한다.\n"
     "\n"
-    "  codex exec -m gpt-5.6-terra -c model_reasoning_effort=high \\\n"
-    "    -C <프로젝트 루트> --sandbox workspace-write --approve-for-me - <<'SPEC' 2>&1 | tail -40\n"
+    "  codex exec -m gpt-5.6-terra -c model_reasoning_effort=high --json \\\n"
+    "    -C <프로젝트 루트> --approve-for-me - <<'CLAUDEX_SPEC' > /tmp/codex-last.jsonl 2>/dev/null\n"
     "  <스펙>\n"
-    "  SPEC\n"
+    "  CLAUDEX_SPEC\n"
+    "\n"
+    "  jq -rf ~/.claude/skills/claudex/claudex-progress.jq --arg root \"<프로젝트 루트>/\" /tmp/codex-last.jsonl\n"
     "\n"
     "코덱스는 이 대화의 맥락을 하나도 못 받는다. 스펙에 반드시 넣을 것:\n"
     "  - 고칠 파일의 경로와, 기존 코드에서 따라야 할 규약 (네이밍, 계층, 쓰는 라이브러리)\n"
@@ -55,7 +57,7 @@ def main():
 
     if data.get("tool_name") == "Bash":
         cmd = (data.get("tool_input") or {}).get("command", "")
-        if "claudex" in cmd:          # 모드를 끄는 명령은 스스로 막지 않는다
+        if "claudex" in cmd or "codex exec" in cmd:   # 모드 해제 명령과 위임 명령 자체는 막지 않는다
             sys.exit(0)
         if not BASH_WRITE.search(cmd):
             sys.exit(0)
@@ -78,7 +80,7 @@ def selftest():
         "cat foo | tee bar.txt",
     ]
     allow = [
-        "codex exec -C . --sandbox workspace-write --approve-for-me - <<'SPEC'",
+        "codex exec -C . --approve-for-me - <<'CLAUDEX_SPEC'",
         "git diff",
         "npm test > /dev/null 2>&1",
         "npm test > /tmp/out.log",

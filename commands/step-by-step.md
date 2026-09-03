@@ -58,7 +58,7 @@ disable-model-invocation: true
 1단계에서 예고한 스펙을 그대로 stdin 으로 넘긴다.
 
 ```bash
-codex exec -C <프로젝트 루트> --sandbox workspace-write --approve-for-me - <<'SPEC' 2>&1 | tail -40
+codex exec -C <프로젝트 루트> --approve-for-me - <<'SPEC' 2>&1 | tail -40
 <1단계 예고 그대로: 고칠 파일, 만들 타입/함수 시그니처, 지켜야 할 기존 규약, 범위 밖>
 SPEC
 ```
@@ -174,8 +174,7 @@ SPEC
 | --- | --- | --- |
 | 설치 확인 | `codex --version` | 없으면 위임 불가. 그 사실을 먼저 보고하고 직접 구현으로 전환한다 |
 | 권한 허용 | 전역 `settings.json` 의 `permissions.allow` 에 `Bash(codex exec:*)` | 단계마다 승인 프롬프트가 뜨는 것을 막는다 |
-| 샌드박스 | `--sandbox workspace-write` | 기본값 `read-only` 로는 파일을 못 쓴다 |
-| 승인 | `--approve-for-me` | `exec` 는 비대화형이라 승인 요청이 오면 그대로 멈춘다 |
+| 승인과 샌드박스 | `--approve-for-me` | `exec` 는 비대화형이라 승인 요청이 오면 그대로 멈춘다. 이 플래그가 `workspace-write` 샌드박스까지 포함하므로 `--sandbox` 를 따로 주면 안 된다 |
 | 작업 루트 | `-C <프로젝트 루트>` | 클로드의 cwd 와 무관하게 고정한다 |
 | 출력 | `2>&1 \| tail -40` | 코덱스 쪽 훅 로그·MCP 경고가 섞여 나온다 |
 | git 아닌 경우 | `--skip-git-repo-check` | 다만 검토를 `git diff` 로 하므로 git 저장소를 권한다 |

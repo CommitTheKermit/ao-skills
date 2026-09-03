@@ -124,7 +124,7 @@ Android 프로젝트와 Play Console 자료를 최신 Google 공식 정책 및 �
 발동 표현: "안드로이드 심사 통과할까", "Play 심사 테스트", "출시 전 정책 점검", "리젝 위험 검사" 등.
 
 ### claudex
-클로드가 의도 확인·설계·검토·질문을 맡고 **파일 작성은 `codex exec` 에 위임**하는 모드를 켜고 끈다. `claudex-guard.py`(PreToolUse)가 플래그 파일 `~/.claude/claudex` 가 있을 때만 `Edit`·`Write`·`NotebookEdit` 과 Bash 의 파일 쓰기(`sed -i`, `tee`, 소스 파일 리다이렉트, 파일 heredoc)를 `deny` 하고, 차단 이유로 위임 절차 전문을 되돌려준다. 코덱스가 막히면 `NEEDS_INPUT:` 으로 멈추고 클로드가 `AskUserQuestion` 으로 사용자에게 옮긴 뒤 `codex exec resume --last` 로 이어붙여, 사용자가 코덱스 터미널을 열 일이 없다. 위임 호출은 `-m gpt-5.6-terra -c model_reasoning_effort="high"` 로 고정한다. 플래그가 없으면 훅은 첫 줄에서 통과하므로 기본은 꺼짐. `~/.claude/settings.json` 훅 등록은 동기화 범위 밖이라 수동.
+클로드가 의도 확인·설계·검토·질문을 맡고 **파일 작성은 `codex exec` 에 위임**하는 모드를 켜고 끈다. `claudex-guard.py`(PreToolUse)가 플래그 파일 `~/.claude/claudex` 가 있을 때만 `Edit`·`Write`·`NotebookEdit` 과 Bash 의 파일 쓰기(`sed -i`, `tee`, 소스 파일 리다이렉트, 파일 heredoc)를 `deny` 하고, 차단 이유로 위임 절차 전문을 되돌려준다. 코덱스가 막히면 `NEEDS_INPUT:` 으로 멈추고 클로드가 `AskUserQuestion` 으로 사용자에게 옮긴 뒤 `codex exec resume --last` 로 이어붙여, 사용자가 코덱스 터미널을 열 일이 없다. 위임 호출은 `-m gpt-5.6-terra -c model_reasoning_effort="high"` 로 고정한다. `--json` 이벤트는 진행 표시 필터로 고친 파일과 실행 명령을 압축해 보여 준다. 플래그가 없으면 훅은 첫 줄에서 통과하므로 기본은 꺼짐. `~/.claude/settings.json` 훅 등록은 동기화 범위 밖이라 수동.
 
 발동 표현: `/claudex`, `/claudex on|off|status` (`disable-model-invocation: true`).
 
@@ -200,6 +200,12 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 ## 최근 변경내역 (2026-W36)
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 의 주차별 파일 참조. (주가 바뀌면 이 섹션 항목을 `changelog/<직전 주차>.md`로 옮긴다.)
+
+### 2026-09-03 - `claudex` 위임 명령 수정과 진행 표시 추가
+- 기존: `--sandbox workspace-write` 와 `--approve-for-me` 를 함께 줘 `codex exec` 가 실행되지 않았고, `codex exec resume` 서브커맨드도 받지 않는 `-C` 와 `--approve-for-me` 가 문서에 있어 `NEEDS_INPUT` 을 이어붙이는 명령이 실행되지 않았으며, 출력은 마지막 40줄만 보여 위임 중 고친 파일과 실행 명령을 알 수 없었음
+- 변경: 충돌하는 `--sandbox` 와 `codex exec resume` 이 지원하지 않는 `-C`·`--approve-for-me` 를 제거하고 `--json` JSONL을 `/tmp/codex-last.jsonl` 에 받은 뒤 진행 표시 필터로 고친 파일·실행 명령·메시지 첫 줄을 보여 주며, 훅은 `codex exec` heredoc 위임 명령을 통과시킴
+- 이유: 실제 실행 가능한 위임 명령으로 고치고, 위임 작업의 진행 상황을 짧고 확인 가능하게 보여 주기 위해
+- 영향 파일: `skills/claudex/SKILL.md`, `skills/claudex/claudex-progress.jq`, `skills/claudex/claudex-guard.py`, `commands/step-by-step.md`, `README.md`
 
 ### 2026-09-01 - 신규 추가: `github-pr-review`
 - 기존: PR 리뷰 요청 시 결과 보고와 GitHub 인라인 코멘트 여부를 매번 별도로 지정해야 했음

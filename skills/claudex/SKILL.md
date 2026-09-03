@@ -69,17 +69,29 @@ ls    ~/.claude/claudex   # status
 ### 3. 위임 (코덱스)
 
 ```bash
-codex exec -m gpt-5.6-terra -c model_reasoning_effort="high" \
-  -C <프로젝트 루트> --sandbox workspace-write --approve-for-me - <<'SPEC' 2>&1 | tail -40
+codex exec -m gpt-5.6-terra -c model_reasoning_effort="high" --json \
+  -C <프로젝트 루트> --approve-for-me - <<'CLAUDEX_SPEC' > /tmp/codex-last.jsonl 2>/dev/null
 <2단계 스펙 그대로>
-SPEC
+CLAUDEX_SPEC
+
+jq -rf ~/.claude/skills/claudex/claudex-progress.jq --arg root "<프로젝트 루트>/" /tmp/codex-last.jsonl
 ```
 
 모델과 추론 강도는 **매 호출 명시한다.** 코덱스 기본값(`~/.codex/config.toml` 의
 `model = "gpt-5.6-sol"`, `model_reasoning_effort = "medium"`)은 대화형 작업 기준이다.
 클로드가 의도를 확정하고 스펙까지 짜 준 구현 작업에는 더 센 쪽을 쓴다.
 
-오래 걸리면 `run_in_background` 로 던지고, 기다리는 동안 다음 스펙을 쓴다.
+`--json` 은 코덱스가 고친 파일과 실행한 명령을 사용자에게 보이기 위해 붙인다. 마지막 40줄만
+남기면 그 진행 상황은 보이지 않는다. `jq` 출력은 그대로 사용자에게 보여 준다. 코덱스가 한 일은
+그 몇 줄에 압축되어 있다.
+
+heredoc 과 `jq` 파이프를 한 줄에 잇지 않는다. 따옴표가 충돌해 셸이 깨질 수 있으므로 JSONL을
+파일에 받은 뒤 `jq`를 별도 명령으로 실행한다. 종료 토큰은 스펙 본문에 없는 것으로 고른다. 특히
+스펙 안에 `codex exec` 예시가 있으면 본문에 등장한 토큰에서 heredoc 이 끊기지 않게 주의한다.
+
+원본 이벤트는 `/tmp/codex-last.jsonl` 에 남는다. 이상하면 그 파일을 직접 `jq`로 확인한다. 오래
+걸리는 작업은 `run_in_background` 로 던지고, 도는 동안에도 같은 `jq` 명령으로 이 파일을 훑어
+중간 진행 상황을 사용자에게 보고한다.
 
 ### 4. NEEDS_INPUT 처리 (클로드 → 사용자 → 코덱스)
 
@@ -89,9 +101,15 @@ SPEC
 답이 나오면 세션을 이어붙인다.
 
 ```bash
-codex exec resume --last -m gpt-5.6-terra -c model_reasoning_effort="high" \
-  "<사용자가 고른 답>" 2>&1 | tail -40
+codex exec resume --last -m gpt-5.6-terra -c model_reasoning_effort="high" --json \
+  "<사용자가 고른 답>" > /tmp/codex-last.jsonl 2>/dev/null
+
+jq -rf ~/.claude/skills/claudex/claudex-progress.jq --arg root "<프로젝트 루트>/" /tmp/codex-last.jsonl
 ```
+
+resume 은 세션을 이어받으므로 작업 루트와 승인 방식을 다시 지정하지 않는다. 그래서 위임할 때와
+달리 `-C` 와 `--approve-for-me` 를 주면 에러가 난다. 클로드는 처음 위임했던 디렉토리에서 이 명령을
+실행해야 `--last` 가 맞는 세션을 잡는다.
 
 `--last` 는 현재 작업 디렉토리 기준 최신 세션을 잡는다. 다른 디렉토리를 오갔으면 세션 id 를
 직접 지정한다.
@@ -115,6 +133,8 @@ codex exec resume --last -m gpt-5.6-terra -c model_reasoning_effort="high" \
 `/claudex off` 를 제안한 뒤, 사용자가 끄면 직접 고친다. 끝나면 다시 켤지 묻는다.
 
 ## 설치
+
+진행 표시에는 `jq`가 필요하다. macOS에는 `/usr/bin/jq`로 이미 있다.
 
 ### 1. 훅 등록 (동기화 범위 밖이라 수동)
 
