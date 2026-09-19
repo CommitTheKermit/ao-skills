@@ -113,6 +113,11 @@ Codex 스킬은 `~/.agents/skills/`, 커맨드는 `~/.Codex/commands/`에 설치
 
 발동 표현: "스킬 만들자", "스킬 수정", "커맨드 추가", "커맨드 변경", "스킬 동기화" 등.
 
+### home-server (Codex)
+로컬 SSH 별칭으로 개인 홈서버에 접속해 상태·프로젝트·서비스·예약 작업을 확인하고 요청된 원격 작업을 수행한다. 접속 정보와 비밀값은 공개 스킬 원본에 저장하지 않는다.
+
+발동 표현: "홈서버 접속", "서버에서 확인", "홈서버에서 실행", "Windows 서버 작업" 등.
+
 ### build-signed-aab
 Android 앱의 단위 테스트와 release bundle 빌드를 실행하고, Play 제출용 AAB의 서명·application ID·버전·런처 아이콘을 검증한 뒤 버전명 파일로 보관한다. 버전과 패키지명은 자동 변경하지 않는다.
 
@@ -197,46 +202,18 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 | `/step-by-step` | 구현을 작은 단계로 쪼개 단계마다 검증·보고·승인을 거치며 진행 (코드 작성은 코덱스 위임) |
 | `/ao-skill-update` | 스킬/커맨드 변경 + 전역 동기화 + 커밋 + 푸시 |
 
-## 최근 변경내역 (2026-W36)
+## 최근 변경내역 (2026-W38)
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 의 주차별 파일 참조. (주가 바뀌면 이 섹션 항목을 `changelog/<직전 주차>.md`로 옮긴다.)
 
-### 2026-09-03 - `claudex` 위임 명령 수정과 진행 표시 추가
-- 기존: `--sandbox workspace-write` 와 `--approve-for-me` 를 함께 줘 `codex exec` 가 실행되지 않았고, `codex exec resume` 서브커맨드도 받지 않는 `-C` 와 `--approve-for-me` 가 문서에 있어 `NEEDS_INPUT` 을 이어붙이는 명령이 실행되지 않았으며, 출력은 마지막 40줄만 보여 위임 중 고친 파일과 실행 명령을 알 수 없었음
-- 변경: 충돌하는 `--sandbox` 와 `codex exec resume` 이 지원하지 않는 `-C`·`--approve-for-me` 를 제거하고 `--json` JSONL을 `/tmp/codex-last.jsonl` 에 받은 뒤 진행 표시 필터로 고친 파일·실행 명령·메시지 첫 줄을 보여 주며, 훅은 `codex exec` heredoc 위임 명령을 통과시킴
-- 이유: 실제 실행 가능한 위임 명령으로 고치고, 위임 작업의 진행 상황을 짧고 확인 가능하게 보여 주기 위해
-- 영향 파일: `skills/claudex/SKILL.md`, `skills/claudex/claudex-progress.jq`, `skills/claudex/claudex-guard.py`, `commands/step-by-step.md`, `README.md`
-
-### 2026-09-01 - 신규 추가: `github-pr-review`
-- 기존: PR 리뷰 요청 시 결과 보고와 GitHub 인라인 코멘트 여부를 매번 별도로 지정해야 했음
-- 변경: 특정 PR 리뷰 요청만으로 재현 가능한 finding을 변경 줄에 `COMMENT` 리뷰로 제출
-- 이유: 리뷰 결과가 코드 문맥에 바로 남아 수정과 재검증으로 이어지게 하기 위해
-- 영향 파일: `codex/skills/github-pr-review/SKILL.md`, `README.md`
-
-### 2026-09-01 - `claudex` 위임 호출에 모델·추론 강도 명시
-- 기존: `codex exec` 를 옵션 없이 불러 코덱스 기본값(`gpt-5.6-sol` / `model_reasoning_effort = "medium"`)으로 구현이 돌았다
-- 변경: 위임과 `resume` 호출 모두 `-m gpt-5.6-terra -c model_reasoning_effort="high"` 를 붙이도록 SKILL.md 와 훅의 차단 이유 문구를 갱신
-- 이유: 클로드가 의도를 확정하고 스펙까지 짜 준 뒤라 구현 쪽에 더 센 모델과 추론 강도를 쓰는 편이 낫다. 모델 ID 와 조합은 `codex exec -m gpt-5.6-terra -c model_reasoning_effort="high"` 실행으로 실측 확인
-- 영향 파일: `skills/claudex/SKILL.md`, `skills/claudex/claudex-guard.py`, `README.md`
-
-### 2026-09-01 - `no-ai-design` 스킬 제거
-- 기존: `skills/no-ai-design/` 과 `codex/skills/no-ai-design/` 이 있었으나, frontmatter 의 `description` 값이 `"LLM은 설계를 못한다"는 ...` 으로 시작해 YAML quoted scalar 파싱에 실패했다 (`invalid YAML: did not find expected key at line 2 column 28`)
-- 변경: 레포의 두 사본과 `~/.claude/skills/`, `~/.agents/skills/` 사본을 모두 제거
-- 이유: Codex 세션이 시작될 때마다 스킬 로드 에러를 뱉고 있었고, 사용자가 이 스킬을 더 쓰지 않기로 했다
-- 영향 파일: `skills/no-ai-design/`, `codex/skills/no-ai-design/`, `README.md`
-
-### 2026-09-01 - 신규 추가: `claudex`
-- 종류: 스킬
-- 목적: 설계·질문·검토는 클로드, 파일 작성은 코덱스로 갈라 한 세션 안에서 굴리는 위임 모드를 훅으로 강제하고 `/claudex` 로 토글
-- 영향 파일: `skills/claudex/SKILL.md`, `skills/claudex/claudex-guard.py`, `README.md`
-
-### 2026-08-31 - Android 앱 일반 실행의 디버거 대기 방지
-- 기존: Android 앱 실행 시 `android run --debug`를 일반 실행에도 사용해 앱이 디버거 연결을 반복적으로 기다릴 수 있었음
-- 변경: 일반 실행에서 `--debug`를 금지하고 명시적 디버거 연결 요청에만 허용하는 `run-android-app` 스킬을 추가
-- 이유: debug APK 실행과 디버거 대기 옵션을 분리해 앱 실행 요청이 즉시 완료되도록 하기 위해
-- 영향 파일: `codex/skills/run-android-app/SKILL.md`, `README.md`, `changelog/2026-W35.md`
+### 2026-09-19 - 신규 추가: `home-server`
+- 기존: 개인 홈서버 접속 정보와 안전 점검 절차가 프로젝트 문서에 흩어져 원격 작업마다 다시 확인해야 했음
+- 변경: 공개 원본에는 SSH 별칭만 두고 접속 정보는 로컬 설정으로 분리하며, 원격 상태·Git·서비스·예약 작업 검증 절차를 표준화
+- 이유: 개인 인프라 식별자와 비밀값을 공개 저장소에 남기지 않으면서 홈서버 작업을 일관되게 수행하기 위해
+- 영향 파일: `codex/skills/home-server/SKILL.md`, `README.md`, `changelog/2026-W36.md`
 
 ### 지난 변경내역
+- [`2026-W36`](changelog/2026-W36.md) - 2026-08-31 ~ 09-06
 - [`2026-W35`](changelog/2026-W35.md) - 2026-08-24 ~ 08-30
 - [`2026-W33`](changelog/2026-W33.md) - 2026-08-10 ~ 08-16
 - [`2026-W26`](changelog/2026-W26.md) - 2026-06-22 ~ 06-28
