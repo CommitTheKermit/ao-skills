@@ -34,6 +34,8 @@ ssh -o ConnectTimeout=10 home-server "hostname && whoami"
 명령은 기본 셸이 `cmd.exe`일 수 있다고 가정한다. Windows 상태 확인과 변경은
 `powershell -NoProfile -Command`로 명시한다. 복잡한 스크립트나 사용자 입력을 셸 문자열에
 직접 보간하지 않는다. 비밀값은 명령 인자, 표준 출력, 로그에 넣지 않는다.
+Windows에서 설치된 도구가 보이지 않으면 누락으로 판단하기 전에 Machine과 User의 최신
+`Path`를 현재 PowerShell 프로세스에 다시 불러온다.
 
 ## 변경 전 점검
 
