@@ -25,15 +25,22 @@ Hermes Agent 패턴의 변형. 현재는 **replay 검증과 승격만 수동**�
 
 ## replay audit
 
-`replay-audit.py`는 stdlib만으로 `~/.codex/sessions`의 최신 사용자 root 세션 N개를 읽기 전용
-집계한다. subagent 전체 세션, 주입된 AGENTS wrapper, heartbeat는 제외하고
-`event_msg.payload.type == "turn_aborted"`만 중단으로 센다. 원문, 세션 ID, 경로, 비밀값은
-출력하지 않는다.
+`replay-audit.py`는 stdlib만으로 `~/.codex/sessions`와 `~/.codex/archived_sessions`의 사용자 root를 읽기 전용 집계한다. 같은 root ID의 로컬 분할 파일을 모으고 파일 사이에서 동일한 기록은 한 번만 센다. 한 파일 안에서 사용자가 같은 말을 반복한 것은 유지한다.
+
+subagent, AGENTS wrapper, heartbeat, 주입된 스킬 본문과 브라우저 문맥은 제외한다. 브라우저 문맥 뒤의 실제 요청과 질문 도구에 사용자가 답한 내용은 보존한다. 질문 도구가 복사한 질문은 사용자 교정으로 세지 않는다. 중단은 `event_msg.payload.type == "turn_aborted"`만 센다. 원문, 세션 ID, 경로, 비밀값은 출력하지 않는다.
 
 ```bash
 python3 "$HOME/.agents/skills/knowledge-loop/replay-audit.py" --latest 100
 python3 "$HOME/.agents/skills/knowledge-loop/replay-audit.py" --current
+python3 "$HOME/.agents/skills/knowledge-loop/replay-audit.py" --session-ids-file /absolute/path/session-ids.json
 ```
+
+- `--latest N`은 가장 최근 rollout 파일명 시각을 가진 root N개다. 앱의 갱신 순서와 같다고 단정하지 않는다. `--current`도 이 순서의 첫 root이며 호출 중인 세션을 자동 식별하는 옵션이 아니다.
+- 고정 목록 분석에는 ID 문자열 배열 JSON을 `--session-ids-file`로 전달한다. `requested_sessions`, `missing_sessions`로 누락을 확인한다. ChatGPT 대화는 이 로컬 Codex 집계 대상이 아니다.
+- `correction_signals`는 정규식 검색 후보다. 학습 답변의 "아니요"도 잡힐 수 있으므로 오류 건수나 규칙 승격 근거로 바로 쓰지 않는다. 전후 사용자·응답 문맥을 읽고 독립 사례인지 확인한다.
+- `commit_command_candidates`는 호출 인자에 `git commit`이 포함된 후보 수이며 성공한 커밋 수가 아니다. `tool_calls`는 `function_call`과 `custom_tool_call`을 센다.
+- `segments`, `duplicate_records_ignored`, `ignored_user_wrappers`, `malformed_lines`로 수집 범위를 확인한다. `history_base_segments`가 있으면 상속 이력이 있다. 다른 root의 이력을 재귀적으로 펼치지 않으므로 대화 전문을 모두 읽었다고 주장하지 않는다.
+- 비밀값 관련 지표는 알려진 패턴의 탐지 결과일 뿐이다. 0이어도 원문이 안전하거나 익명화되었다는 보장이 아니다.
 
 ## 미등록 자동화 자산
 

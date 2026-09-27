@@ -6,6 +6,24 @@ source_skills="$repo_root/codex/skills"
 source_hooks="$repo_root/codex/hooks"
 chaekchaek_root="/Users/ujeonghyeon/Desktop/dev/myDev/2026-chaekchaek"
 
+if [ "$#" -gt 0 ]; then
+  [ "$1" = "--skills" ] && [ "$#" -gt 1 ] || { echo 'Usage: verify.sh [--skills name ...]' >&2; exit 2; }
+  shift
+  for name in "$@"; do
+    [[ "$name" =~ ^[a-z0-9][a-z0-9-]*$ ]] && [ -f "$source_skills/$name/SKILL.md" ] || { echo 'Unknown or invalid skill name' >&2; exit 2; }
+    rg -q -F "usage-stats: skill $name" "$source_skills/$name/SKILL.md"
+    rg -q -F "record skill $name" "$source_skills/$name/SKILL.md"
+    diff -r -x __pycache__ -x .DS_Store "$source_skills/$name" "$HOME/.agents/skills/$name"
+    [ ! -d "$HOME/.Codex/skills/$name" ] || { echo 'Duplicate legacy skill remains' >&2; exit 1; }
+    if [ "$name" = "knowledge-loop" ]; then
+      python3 "$source_skills/$name/replay-audit.py" --self-test
+      bash -n "$source_skills/$name/knowledge-extract.sh"
+    fi
+  done
+  echo "Selected Codex skill verification passed: $*"
+  exit 0
+fi
+
 bad_refs="$(rg -n -i --glob 'SKILL.md' --glob '*.md' --glob '*.py' --glob '*.sh' --glob '!verify.sh' \
   '(~/.claude|\.claude/|CLAUDE\.md|CLAUDE_PROJECT_DIR|AskUserQuestion|codex exec.+위임)' \
   "$repo_root/codex" \
@@ -75,17 +93,17 @@ assert any("block-secrets.py" in command for command in global_commands)
 assert any("action-target-nudge.py" in command for command in global_commands)
 assert any("check-commit-msg.py" in command for command in global_commands)
 assert not any("fix-emdash.py" in command or "chaekchaek-" in command for command in global_commands)
-for name in ("chaekchaek-branch-name-guard.py", "chaekchaek-pr-title-guard.py", "chaekchaek-design-system-guard.py"):
+for name in ("chaekchaek-branch-name-guard.py", "chaekchaek-pr-title-guard.py"):
     assert any(name in command for command in local_commands)
 assert not any("block-secrets.py" in command or "action-target-nudge.py" in command for command in local_commands)
-post_matchers = [entry.get("matcher", "") for entry in local_config["hooks"]["PostToolUse"]]
-assert any("get_screenshot" in matcher and "execute" in matcher for matcher in post_matchers)
+assert not any("chaekchaek-design-system-guard.py" in command for command in local_commands)
+assert not (project / ".codex/hooks/chaekchaek-design-system-guard.py").exists()
 
 for name in ("block-secrets.py", "action-target-nudge.py"):
     source = repo / "codex/hooks" / name
     installed = Path.home() / ".codex/hooks" / name
     assert hashlib.sha256(source.read_bytes()).digest() == hashlib.sha256(installed.read_bytes()).digest()
-for name in ("chaekchaek-branch-name-guard.py", "chaekchaek-pr-title-guard.py", "chaekchaek-design-system-guard.py"):
+for name in ("chaekchaek-branch-name-guard.py", "chaekchaek-pr-title-guard.py"):
     source = repo / "codex/hooks" / name
     installed = project / ".codex/hooks" / name
     assert hashlib.sha256(source.read_bytes()).digest() == hashlib.sha256(installed.read_bytes()).digest()

@@ -14,6 +14,22 @@ chaekchaek_root="/Users/ujeonghyeon/Desktop/dev/myDev/2026-chaekchaek"
 chaekchaek_hooks="$chaekchaek_root/.codex/hooks"
 chaekchaek_config="$chaekchaek_root/.codex/hooks.json"
 
+if [ "$#" -gt 0 ]; then
+  [ "$1" = "--skills" ] && [ "$#" -gt 1 ] || { echo 'Usage: sync.sh [--skills name ...]' >&2; exit 2; }
+  shift
+  for skill_dir in "$@"; do
+    [[ "$skill_dir" =~ ^[a-z0-9][a-z0-9-]*$ ]] && [ -f "$source_skills/$skill_dir/SKILL.md" ] || { echo 'Unknown or invalid skill name' >&2; exit 2; }
+  done
+  mkdir -p "$agent_skills"
+  for skill_dir in "$@"; do
+    rm -rf "$agent_skills/$skill_dir"
+    cp -R "$source_skills/$skill_dir" "$agent_skills/$skill_dir"
+    [ ! -d "$legacy_skills/$skill_dir" ] || rm -rf "$legacy_skills/$skill_dir"
+  done
+  echo "Selected Codex skills synced: $*"
+  exit 0
+fi
+
 mkdir -p "$agent_skills" "$codex_commands" "$codex_hooks" "$chaekchaek_hooks"
 
 for source_dir in "$source_skills"/*; do
@@ -39,12 +55,12 @@ cp "$source_commands"/*.md "$codex_commands/"
 for hook in block-secrets.py action-target-nudge.py; do
   cp "$source_hooks/$hook" "$codex_hooks/$hook"
 done
-for hook in chaekchaek-branch-name-guard.py chaekchaek-pr-title-guard.py chaekchaek-design-system-guard.py; do
+for hook in chaekchaek-branch-name-guard.py chaekchaek-pr-title-guard.py; do
   cp "$source_hooks/$hook" "$chaekchaek_hooks/$hook"
   # Keep global files for old-session compatibility while registrations remain removed.
   cp "$source_hooks/$hook" "$codex_hooks/$hook"
 done
-for stale in "$chaekchaek_hooks/design_system_guard.py" "$chaekchaek_hooks/.DS_Store"; do
+for stale in "$chaekchaek_hooks/design_system_guard.py" "$chaekchaek_hooks/.DS_Store" "$chaekchaek_hooks/chaekchaek-design-system-guard.py" "$codex_hooks/chaekchaek-design-system-guard.py"; do
   [ ! -e "$stale" ] || rm -f "$stale"
 done
 rm -f "$codex_hooks/fix-emdash.py"
@@ -104,7 +120,7 @@ path = Path(sys.argv[1])
 directory = Path(sys.argv[2])
 command = lambda name: f'/usr/bin/python3 "{directory / name}"'
 config = {
-    "description": "Chaekchaek local branch, PR, and design guards.",
+    "description": "Chaekchaek local branch and PR guards.",
     "hooks": {
         "PreToolUse": [
             {
@@ -114,18 +130,7 @@ config = {
                     {"type": "command", "command": command("chaekchaek-pr-title-guard.py"), "timeout": 5},
                 ],
             },
-            {
-                "matcher": r"^(?:mcp__pencil__execute|apply_patch|Bash|functions\.exec)$",
-                "hooks": [{"type": "command", "command": command("chaekchaek-design-system-guard.py"), "timeout": 5}],
-            },
         ],
-        "PostToolUse": [{
-            "matcher": r"^mcp__pencil__(?:get_screenshot|execute)$",
-            "hooks": [{"type": "command", "command": command("chaekchaek-design-system-guard.py"), "timeout": 5}],
-        }],
-        "UserPromptSubmit": [{
-            "hooks": [{"type": "command", "command": command("chaekchaek-design-system-guard.py"), "timeout": 5}],
-        }],
     },
 }
 path.parent.mkdir(parents=True, exist_ok=True)

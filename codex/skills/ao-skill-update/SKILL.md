@@ -29,12 +29,14 @@ Codex 작업에서는 `codex/` 아래만 편집한다. 전역 설치본을 직�
 3. 스킬은 `codex/skills/<name>/`, 커맨드는 `codex/commands/<name>.md`에서 편집한다.
 4. 새 스킬·훅·하네스에는 `usage-stats` 기록 명령과 `usage-stats: <kind> <name>` 마커를 넣는다.
 5. `README.md`의 현재 ISO 주차 변경내역 맨 위에 기존·변경·이유·영향 파일을 기록한다.
-6. `bash codex/sync.sh`로 동기화한다.
+6. 스킬만 변경했다면 `bash codex/sync.sh --skills <변경한 스킬 이름...>`으로 해당 스킬만 동기화한다. 커맨드·훅까지 변경한 전체 동기화는 적용 대상 설정과 기존 변경을 먼저 확인한 뒤 `bash codex/sync.sh`를 사용한다. 사전 확인 명령이 실패하면 동기화를 실행하지 않는다.
 7. 아래 검증을 실행한다.
 
    ```bash
-   bash codex/verify.sh
+   bash codex/verify.sh --skills <변경한 스킬 이름...>
    ```
+
+   전체 동기화를 수행한 경우 `bash codex/verify.sh`로 전체 자산도 검증한다.
 
 8. 한국어 conventional commit을 만들고 `git push origin main`을 실행한다. 서명 트레일러는
    넣지 않는다.
@@ -61,6 +63,8 @@ description: 발동 조건과 수행 내용
 
 삭제 작업은 원본과 설치본에서 같은 이름만 제거한다. 다른 스킬이나 사용자 데이터를 건드리지
 않는다.
+
+스킬 수정 때문에 다른 프로젝트의 훅을 다시 등록하지 않는다. `chaekchaek-design-system-guard`는 폐기된 자동 훅이므로 전체 동기화에서도 설치·등록하지 않는다. 소스는 이력과 회귀 검사 용도로만 남아 있다.
 
 ## 변경내역
 
