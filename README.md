@@ -159,6 +159,11 @@ claude.ai/design export(핸드오프) CSS 를 옮길 때 빌드·`tsc`·`vitest`
 
 발동 표현: "핸드오프 CSS 검증/가드 붙여줘", "디자인 export 적용 재발 방지 하네스", "css-guard 설치" 등.
 
+### incident-postmortem
+조사와 수정이 끝난 장애를 `docs/incidents/`에 포스트모템(요약, 영향, 타임라인, 근본 원인, 증거, 조치, 런북, 미해결)으로 남긴다. 인덱스와 프로젝트 `AGENTS.md`/`CLAUDE.md`에 라우팅을 걸어 다음 장애 때 사람과 에이전트가 증상부터 대조하게 한다. 템플릿은 `assets/template.md`.
+
+발동 표현: "포스트모템", "인시던트 기록", "장애 문서로 남겨", "이 문제 상황 문서화", "/incident-postmortem" 등.
+
 ### github-pr-review
 GitHub PR의 전체 diff와 호출 경로, 관련 테스트를 검토하고 재현 가능한 문제만 변경 줄에 인라인 코멘트로 제출한다. 문제가 없으면 빈 리뷰를 만들지 않는다.
 
@@ -213,6 +218,11 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 | `/ao-skill-update` | 스킬/커맨드 변경 + 전역 동기화 + 커밋 + 푸시 |
 
 ## 최근 변경내역 (2026-W40)
+
+### 2026-10-04 - 신규 추가: `incident-postmortem`
+- 종류: 스킬
+- 목적: 장애 조사 결과를 포스트모템으로 정형화하고 프로젝트 메모리에 라우팅해 다음 장애 때 먼저 대조하게 한다.
+- 영향 파일: `skills/incident-postmortem/SKILL.md`, `skills/incident-postmortem/assets/template.md`, `README.md`
 
 ### 2026-10-01: 새 개념의 설명 완료 조건 추가
 
