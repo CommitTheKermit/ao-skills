@@ -222,17 +222,18 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 | `/step-by-step` | 구현을 작은 단계로 쪼개 단계마다 검증·보고·승인을 거치며 진행 (코드 작성은 코덱스 위임) |
 | `/ao-skill-update` | 스킬/커맨드 변경 + 전역 동기화 + 커밋 + 푸시 |
 
-## 최근 변경내역 (2026-W41)
+## 최근 변경내역 (2026-W42)
 
-### 2026-10-07 - 신규 추가: `home-server-2`
-- 기존: `home-server` 하나가 기존 Windows 서버만 대상으로 해 새 서버의 접속·배포·Android 상태를 분리해 다룰 수 없었음
-- 변경: 별도 SSH 별칭과 Git 밖 상태 URL 설정을 사용하는 두 번째 Windows 홈서버 전용 스킬을 추가
-- 이유: 두 서버의 프로젝트 경로, 서비스, 에뮬레이터와 복구 상태를 섞지 않고 각각 검증하기 위해
-- 영향 파일: `codex/skills/home-server-2/SKILL.md`, `codex/skills/home-server-2/agents/openai.yaml`, `README.md`, `changelog/2026-W40.md`
+### 2026-10-15 - 신규 추가: `document-memory-routing`
+- 기존: 문서를 저장하고 README만 연결하면 후속 에이전트가 읽을 프로젝트 메모리 경로가 빠질 수 있었음
+- 변경: 문서 작성과 갱신 시 AGENTS.md에 읽기 조건 및 경로를 함께 연결하는 암시적 호출 스킬 추가
+- 이유: 문서 저장과 프로젝트 메모리 라우팅을 같은 작업의 완료 조건으로 만들기 위해
+- 영향 파일: `codex/skills/document-memory-routing/SKILL.md`, `README.md`, `changelog/2026-W41.md`. 로컬 전역 `~/.codex/AGENTS.md`에도 작업별 호출 규칙 추가
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 참조.
 
 ### 지난 변경내역
+- [`2026-W41`](changelog/2026-W41.md) - 2026-10-05 ~ 10-11
 - [`2026-W40`](changelog/2026-W40.md) - 2026-09-28 ~ 10-04
 - [`2026-W39`](changelog/2026-W39.md) - 2026-09-21 ~ 09-27
 - [`2026-W38`](changelog/2026-W38.md) - 2026-09-14 ~ 09-20
