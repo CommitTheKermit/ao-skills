@@ -31,12 +31,13 @@ ao-skills/
 │   ├── record-android-review-failure/ # Play 심사 실패 사례 수집 스킬
 │   │   ├── SKILL.md
 │   │   └── references/failure-cases.md
-│   ├── step-by-step/        # Codex용 단계별 구현·검증 워크플로우 스킬
+│   ├── step-by-step/        # 단계별 구현·검증 워크플로우 스킬
 │   │   └── SKILL.md
 │   └── todo/                # 프로젝트별/전역 TODO 관리 스킬 (+ 세션 훅)
 │       ├── SKILL.md
 │       └── todo-session.py
 ├── commands/
+│   ├── learn-by-doing.md    # /learn-by-doing - 사용자가 직접 쓸 코드 조각 요청
 │   ├── socratic-learn.md    # /socratic-learn - 소크라테스식 학습 모드 진입
 │   ├── session-handoff.md   # /session-handoff - 세션 문맥 핸드오프 산출물 생성
 │   ├── stt-refine.md        # /stt-refine - STT 녹취록을 검수본·요약본으로 변환
@@ -118,17 +119,17 @@ Codex 스킬은 `~/.agents/skills/`, 커맨드는 `~/.Codex/commands/`에 설치
 
 발동 표현: "홈서버 접속", "서버에서 확인", "홈서버에서 실행", "Windows 서버 작업" 등.
 
-### home-server-2 (Codex)
+### home-server-2
 전용 SSH 별칭으로 두 번째 Windows 홈서버에 접속해 프로젝트 배포, 서비스 확인, Android 에뮬레이터와 앱 설치 작업을 수행한다. 기존 홈서버와 접속 설정, 프로세스, 복구 상태를 섞지 않는다.
 
 발동 표현: "홈서버2 접속", "새 홈서버에 반영", "홈서버2에서 앱 설치" 등.
 
-### intent-first (Codex)
+### intent-first
 코드 구현, 수정, 리팩터링, 리뷰에서 코드 길이보다 사용자의 행동과 도메인 의도가 이름, 타입, 책임, 테스트에 명확히 드러나는지를 우선한다. 현재 요구사항을 설명하지 않는 추상화는 추가하지 않는다.
 
 발동 범위: 코드 구현, 수정, 리팩터링, 리뷰 작업 전반.
 
-### learn-by-implementing (Codex)
+### learn-by-implementing
 학습자가 실제 코드를 이해하며 구현할 때 관련 코드 위치를 먼저 보여주고, 예측 질문과 설명을 거쳐 승인된 작은 단계만 구현·검증한다. 코드 작성 위임 수준을 유지하고, 매 구현 단계에서 수정 파일의 비자명한 결정 이유와 제약을 확인해 필요한 곳에 기록한다.
 
 발동 표현: "이유를 공부하며 구현", "정답부터 말하지 말고 힌트", "코드 위치를 보여주며 같이 구현", `$learn-by-implementing` 등.
@@ -185,7 +186,7 @@ Android 앱을 에뮬레이터나 연결 기기에 실행한다. 일반 실행�
 발동 표현: "앱 실행해줘", "에뮬레이터 띄워줘", "Android 앱 설치하고 실행" 등.
 
 ### android-emulator-lease
-Android 에뮬레이터를 사용하는 Codex 세션마다 AVD 임대를 원자적으로 획득하고 실제 serial을 연결한다. 전역 PreToolUse 훅은 임대되지 않은 에뮬레이터의 시작, 설치, 입력, 종료와 adb 서버 전체 조작을 실행 전에 차단한다. 임대 없이 실행 중인 AVD는 자동 인수하지 않는다.
+Android 에뮬레이터를 사용하는 Claude Code·Codex 세션마다 AVD 임대를 원자적으로 획득하고 실제 serial을 연결한다. 전역 PreToolUse 훅은 임대되지 않은 에뮬레이터의 시작, 설치, 입력, 종료와 adb 서버 전체 조작을 실행 전에 차단한다. 임대 없이 실행 중인 AVD는 자동 인수하지 않는다.
 
 발동 표현: Android 에뮬레이터, `adb`, `android run`, 연결 기기 Gradle 작업을 사용하는 모든 요청.
 
@@ -209,10 +210,28 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 
 발동 표현: "/yfix", "왜 이렇게 동작해", "이거 왜 안 돼", "버그 고쳐줘", "어떻게 고칠지 비교해줘" 등.
 
-### usage-stats (Codex 전용)
-`ao-skills`가 관리하는 Codex 개인 스킬·훅·하네스의 사용 횟수와 최초·최근 사용 시각을 `~/.Codex/usage-stats.json`에 누적하고, 등록됐지만 아직 안 쓴 항목까지 함께 조회한다. 프롬프트와 프로젝트 경로는 저장하지 않는다.
+### usage-stats
+`ao-skills`가 관리하는 개인 스킬·훅·하네스의 사용 횟수와 최초·최근 사용 시각을 누적하고(Claude `~/.claude/usage-stats.json`, Codex `~/.Codex/usage-stats.json`), 등록됐지만 아직 안 쓴 항목까지 함께 조회한다. 프롬프트와 프로젝트 경로는 저장하지 않는다.
 
 발동 표현: "스킬 사용량", "어떤 스킬 자주 써", "안 쓰는 스킬", "훅 사용 횟수", "/usage-stats" 등.
+
+### flow-first
+앱 기능 구현·수정 전에 요구사항 충돌과 사용자 왕복 플로우를 확인하고, 합의한 동작을 구현·검증·문서 갱신까지 추적한다.
+
+발동 표현: "/flow-first", "플로우 먼저 확인하고 구현" 등.
+
+### document-memory-routing
+지속 보관 문서를 작성하거나 갱신할 때 후속 작업에서 읽을 조건과 경로를 프로젝트 CLAUDE.md(또는 그것이 불러오는 AGENTS.md)에 함께 연결한다.
+
+발동 범위: 문서화, 기록해두기, 문서 갱신 요청 전반.
+
+### parallel-pr-review
+대화를 공유하지 않는 독립 서브에이전트 3개로 PR을 병렬 리뷰하고 주 에이전트가 후보를 직접 재검증한다. Codex의 `terra-parallel-pr-review`를 Claude Agent 도구용으로 다시 쓴 것이다.
+
+발동 표현: "병렬 리뷰", "독립 리뷰 3건", "테라 병렬리뷰" 등.
+
+### eli5 · hallmark · ip-as-logo
+외부에서 가져와 Codex에 설치해 쓰던 스킬을 그대로 옮겼다. 각각 쉬운 설명, 안티 AI 슬롭 디자인, 의인화 IP 로고 생성용이다.
 
 ## 커맨드 목록
 
@@ -224,10 +243,21 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 | `/pr-todo-notion` | GitHub PR을 Notion 단순 체크박스 TODO 페이지로 정리 |
 | `/pr-description` | PR 디스크립션을 정해진 형식으로 작성 |
 | `/pr-review-answer` | PR 리뷰 코멘트 질문에 대한 답변을 정해진 형식으로 작성 |
-| `/step-by-step` | 구현을 작은 단계로 쪼개 단계마다 검증·보고·승인을 거치며 진행 (코드 작성은 코덱스 위임) |
+| `/learn-by-doing` | 다음 구현에서 의미 있는 2~10줄을 사용자가 직접 쓰도록 TODO(human)을 남기고 요청 (명시 호출 전용) |
 | `/ao-skill-update` | 스킬/커맨드 변경 + 전역 동기화 + 커밋 + 푸시 |
 
 ## 최근 변경내역 (2026-W42)
+
+### 2026-10-15 - 신규 추가: `/learn-by-doing`
+- 종류: 커맨드
+- 목적: 출력 스타일을 Learning에서 Explanatory로 바꾸면서, 사용자 코드 작성 요청을 명시 호출 때만 켜기 위해
+- 영향 파일: `commands/learn-by-doing.md`, `README.md`
+
+### 2026-10-15 - Codex 스킬 Claude 이관
+- 기존: `codex/skills`와 `~/.codex/skills`에만 있던 스킬 12개를 Claude에서 쓸 수 없었고, Claude `/step-by-step` 커맨드는 코드 작성을 `codex exec`에 위임했음
+- 변경: `eli5`, `hallmark`, `ip-as-logo`, `flow-first`, `intent-first`, `home-server-2`, `learn-by-implementing`, `run-android-app`, `github-pr-review`, `android-emulator-lease`, `document-memory-routing`을 `skills/`로 옮기고 `.agents` 경로, AGENTS.md 기준, 스킬 안의 수동 사용량 기록을 Claude에 맞게 바꿈. `terra-parallel-pr-review`는 `parallel-pr-review`로, `usage-stats`는 `PreToolUse(Skill)`·`UserPromptSubmit` 훅 기록 방식으로 다시 씀. `commands/step-by-step.md` 삭제(같은 이름 스킬이 Claude 직접 구현을 담당)
+- 이유: 주 사용 에이전트를 Codex에서 Claude Code로 옮기기 위해
+- 영향 파일: `skills/{eli5,hallmark,ip-as-logo,flow-first,intent-first,home-server-2,learn-by-implementing,run-android-app,github-pr-review,android-emulator-lease,document-memory-routing,parallel-pr-review,usage-stats}/`, `commands/step-by-step.md`, `README.md`. 로컬 `~/.claude/settings.json`에 사용량 훅 2개 등록
 
 ### 2026-10-15 - 신규 추가: `android-emulator-lease`
 - 기존: 병렬 Codex 세션이 같은 AVD와 adb 서버를 공유해 다른 작업의 에뮬레이터를 선택하거나 종료할 수 있었음
