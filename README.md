@@ -184,6 +184,11 @@ Android 앱을 에뮬레이터나 연결 기기에 실행한다. 일반 실행�
 
 발동 표현: "앱 실행해줘", "에뮬레이터 띄워줘", "Android 앱 설치하고 실행" 등.
 
+### android-emulator-lease
+Android 에뮬레이터를 사용하는 Codex 세션마다 AVD 임대를 원자적으로 획득하고 실제 serial을 연결한다. 전역 PreToolUse 훅은 임대되지 않은 에뮬레이터의 시작, 설치, 입력, 종료와 adb 서버 전체 조작을 실행 전에 차단한다. 임대 없이 실행 중인 AVD는 자동 인수하지 않는다.
+
+발동 표현: Android 에뮬레이터, `adb`, `android run`, 연결 기기 Gradle 작업을 사용하는 모든 요청.
+
 ### record-android-review-failure
 사용자가 제공한 Play Console 거절 통지·스크린샷·설명에서 개인정보를 제거하고 실패 조건과 검출·예방 방법을 공용 사례집에 누적한 뒤 Git으로 공유한다. 중복 사례는 새로 만들지 않고 기존 항목을 보강한다.
 
@@ -223,6 +228,12 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 | `/ao-skill-update` | 스킬/커맨드 변경 + 전역 동기화 + 커밋 + 푸시 |
 
 ## 최근 변경내역 (2026-W42)
+
+### 2026-10-15 - 신규 추가: `android-emulator-lease`
+- 기존: 병렬 Codex 세션이 같은 AVD와 adb 서버를 공유해 다른 작업의 에뮬레이터를 선택하거나 종료할 수 있었음
+- 변경: 세션별 AVD 임대 도구와 전역 PreToolUse 가드를 추가하고 Android 실행 스킬에 명시적 serial 사용과 소유권 확인 절차를 연결
+- 이유: 워크트리와 무관하게 머신 전체에서 공유되는 에뮬레이터 자원의 병렬 충돌을 실행 전에 차단하기 위해
+- 영향 파일: `codex/skills/android-emulator-lease/`, `codex/hooks/android-emulator-lease-guard.py`, `codex/skills/run-android-app/SKILL.md`, `codex/sync.sh`, `codex/verify.sh`, `codex/hooks/README.md`, `README.md`
 
 ### 2026-10-15 - 신규 추가: `document-memory-routing`
 - 기존: 문서를 저장하고 README만 연결하면 후속 에이전트가 읽을 프로젝트 메모리 경로가 빠질 수 있었음

@@ -58,7 +58,7 @@ for skill_dir in "$source_skills"/*; do
   rg -q -F "record skill $skill_name" "$skill_dir/SKILL.md" || { echo "Missing usage-stats recorder: $skill_dir" >&2; exit 1; }
 done
 
-for hook in block-secrets action-target-nudge chaekchaek-branch-name-guard chaekchaek-pr-title-guard chaekchaek-design-system-guard; do
+for hook in block-secrets action-target-nudge android-emulator-lease-guard chaekchaek-branch-name-guard chaekchaek-pr-title-guard chaekchaek-design-system-guard; do
   file="$source_hooks/$hook.py"
   rg -q -F "usage-stats: hook $hook" "$file" || { echo "Missing usage-stats marker: $file" >&2; exit 1; }
   rg -q -F 'usage_stats.py' "$file" || { echo "Missing usage-stats recorder: $file" >&2; exit 1; }
@@ -70,6 +70,7 @@ rg -q -F 'usage-stats: harness session-replay-audit' "$replay"
 rg -q -F '"harness", "session-replay-audit"' "$replay"
 python3 "$replay" --self-test
 bash -n "$source_skills/knowledge-loop/knowledge-extract.sh"
+python3 "$source_skills/android-emulator-lease/scripts/emulator_lease.py" self-test
 rg -q -F '.payload.type=="turn_aborted"' "$source_skills/knowledge-loop/knowledge-extract.sh"
 [ ! -e "$HOME/.codex/hooks/fix-emdash.py" ] || { echo "Stale fix-emdash.py remains installed" >&2; exit 1; }
 
@@ -99,7 +100,7 @@ assert not any("block-secrets.py" in command or "action-target-nudge.py" in comm
 assert not any("chaekchaek-design-system-guard.py" in command for command in local_commands)
 assert not (project / ".codex/hooks/chaekchaek-design-system-guard.py").exists()
 
-for name in ("block-secrets.py", "action-target-nudge.py"):
+for name in ("block-secrets.py", "action-target-nudge.py", "android-emulator-lease-guard.py"):
     source = repo / "codex/hooks" / name
     installed = Path.home() / ".codex/hooks" / name
     assert hashlib.sha256(source.read_bytes()).digest() == hashlib.sha256(installed.read_bytes()).digest()

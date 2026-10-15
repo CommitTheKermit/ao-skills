@@ -52,7 +52,7 @@ done
 
 cp "$source_commands"/*.md "$codex_commands/"
 
-for hook in block-secrets.py action-target-nudge.py; do
+for hook in block-secrets.py action-target-nudge.py android-emulator-lease-guard.py; do
   cp "$source_hooks/$hook" "$codex_hooks/$hook"
 done
 for hook in chaekchaek-branch-name-guard.py chaekchaek-pr-title-guard.py; do
@@ -76,6 +76,7 @@ hooks = config.setdefault("hooks", {})
 managed = (
     "block-secrets.py",
     "action-target-nudge.py",
+    "android-emulator-lease-guard.py",
     "fix-emdash.py",
     "chaekchaek-branch-name-guard.py",
     "chaekchaek-pr-title-guard.py",
@@ -98,6 +99,15 @@ hooks.setdefault("PreToolUse", []).append({
         "command": f'/usr/bin/python3 "{home}/.codex/hooks/block-secrets.py"',
         "timeout": 5,
         "statusMessage": "Checking secret safety",
+    }],
+})
+hooks.setdefault("PreToolUse", []).append({
+    "matcher": r"^(?:Bash|exec_command|functions\.exec)$",
+    "hooks": [{
+        "type": "command",
+        "command": f'/usr/bin/python3 "{home}/.codex/hooks/android-emulator-lease-guard.py"',
+        "timeout": 5,
+        "statusMessage": "Checking Android emulator lease",
     }],
 })
 hooks.setdefault("UserPromptSubmit", []).append({
