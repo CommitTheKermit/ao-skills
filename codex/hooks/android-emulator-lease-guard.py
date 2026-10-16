@@ -34,8 +34,13 @@ def record_usage() -> None:
     )
 
 
-def current_owner() -> str | None:
-    return os.environ.get("CODEX_THREAD_ID") or os.environ.get("CODEX_SESSION_ID")
+def current_owner(payload: dict | None = None) -> str | None:
+    owner = os.environ.get("CODEX_THREAD_ID") or os.environ.get("CODEX_SESSION_ID")
+    if owner:
+        return owner
+    # PreToolUse는 실행 셸과 다른 환경에서 동작하므로 훅이 전달한 세션 ID도 사용한다.
+    session_id = (payload or {}).get("session_id")
+    return session_id if isinstance(session_id, str) and session_id.strip() else None
 
 
 def lease_directory() -> Path:
@@ -263,7 +268,7 @@ def segment_reason(segment: list[str], command: str, owner: str | None, current_
 
 
 def findings(payload: dict, directory: Path | None = None) -> list[str]:
-    owner = current_owner()
+    owner = current_owner(payload)
     current_leases = leases(directory)
     reasons = []
     for command in extract_commands(payload):
@@ -288,6 +293,7 @@ def self_test() -> None:
     import tempfile
 
     previous_thread = os.environ.get("CODEX_THREAD_ID")
+    previous_session = os.environ.pop("CODEX_SESSION_ID", None)
     os.environ["CODEX_THREAD_ID"] = "thread-a"
     try:
         with tempfile.TemporaryDirectory() as temporary:
@@ -314,11 +320,29 @@ def self_test() -> None:
             indirect = 'const command = "adb shell input tap 1 1"; await tools.exec_command({cmd: command});'
             assert findings({"tool_input": {"code": indirect}}, directory)
             assert avd_from_process_command("/sdk/qemu-system-aarch64 @Pixel_A") == "Pixel_A"
+
+            # 훅 프로세스에는 실행 셸의 CODEX_* 환경변수가 없을 수 있다.
+            os.environ.pop("CODEX_THREAD_ID")
+            own_session = {"session_id": "thread-a", **payload("android emulator start Pixel_A")}
+            assert findings(own_session, directory) == []
+            own_serial = {"session_id": "thread-a", **payload("adb -s emulator-5554 shell input tap 1 1")}
+            assert findings(own_serial, directory) == []
+            assert findings({**own_session, "session_id": "thread-b"}, directory)
+            assert findings({**own_serial, "session_id": "thread-b"}, directory)
+            assert findings(payload("android emulator start Pixel_A"), directory)
+            assert findings({**own_session, "session_id": 123}, directory)
+            assert findings({"tool_input": {"session_id": "thread-a", "cmd": "android emulator start Pixel_A"}}, directory)
+            os.environ["CODEX_SESSION_ID"] = "thread-a"
+            assert findings(payload("android emulator start Pixel_A"), directory) == []
     finally:
         if previous_thread is None:
             os.environ.pop("CODEX_THREAD_ID", None)
         else:
             os.environ["CODEX_THREAD_ID"] = previous_thread
+        if previous_session is None:
+            os.environ.pop("CODEX_SESSION_ID", None)
+        else:
+            os.environ["CODEX_SESSION_ID"] = previous_session
     print("android_emulator_lease_guard: ok")
 
 
