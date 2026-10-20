@@ -249,47 +249,26 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 | `/pr-description` | PR 디스크립션을 정해진 형식으로 작성 |
 | `/pr-review-answer` | PR 리뷰 코멘트 질문에 대한 답변을 정해진 형식으로 작성 |
 | `/learn-by-doing` | 다음 구현에서 의미 있는 2~10줄을 사용자가 직접 쓰도록 TODO(human)을 남기고 요청 (명시 호출 전용) |
+| `/resume-review` | 이력서·포트폴리오를 훑어보기·JD·사실 대조로 진단하고 고칠 목록을 냄 (명시 호출 전용) |
+| `/resume-write` | 이력서·포트폴리오 문구를 라벨·이슈 형식과 근거 경계에 맞춰 고침 (명시 호출 전용) |
 | `/ao-skill-update` | 스킬/커맨드 변경 + 전역 동기화 + 커밋 + 푸시 |
 
-## 최근 변경내역 (2026-W42)
+## 최근 변경내역 (2026-W43)
 
-### 2026-10-16 - 수정: Codex 에뮬레이터 임대 소유자 판정
-- 기존: 임대 CLI와 별도 환경에서 실행되는 훅이 `CODEX_*` 환경변수만 읽어 정상 임대를 미소유로 오판했음
-- 변경: 환경변수가 없으면 훅 입력의 `session_id`로 소유자를 확인하고 동일 세션 허용, 타 세션 거부, 소유자 누락과 잘못된 ID의 회귀 검사를 추가
-- 이유: 정상적인 임대 후 시작과 기기 테스트를 허용하면서 다른 세션의 AVD 보호를 유지하기 위해
-- 영향 파일: `codex/hooks/android-emulator-lease-guard.py`. 기존 훅 등록은 유지하고 해당 전역 설치본에만 반영
-
-### 2026-10-15 - 신규 추가: `run-plipa`
-- 종류: 스킬
-- 목적: Codex 전역 `run`(플리파 실행) 스킬을 Claude 내장 `run`과 충돌하지 않는 이름으로 옮긴다. 백그라운드 실행과 브라우저 탭 재사용은 Claude 도구 기준으로 바꿨다
-- 영향 파일: `skills/run-plipa/SKILL.md`, `README.md`
-
-### 2026-10-15 - 신규 추가: `/learn-by-doing`
+### 2026-10-20 - 신규 추가: `/resume-review`
 - 종류: 커맨드
-- 목적: 출력 스타일을 Learning에서 Explanatory로 바꾸면서, 사용자 코드 작성 요청을 명시 호출 때만 켜기 위해
-- 영향 파일: `commands/learn-by-doing.md`, `README.md`
+- 목적: 이력서·포트폴리오를 훑어보기 기준, JD 대조, 사실 대조로 진단하고 고칠 목록을 우선순위로 내는 절차를 고정한다 (명시 호출 전용)
+- 영향 파일: `commands/resume-review.md`, `README.md`
 
-### 2026-10-15 - Codex 스킬 Claude 이관
-- 기존: `codex/skills`와 `~/.codex/skills`에만 있던 스킬 12개를 Claude에서 쓸 수 없었고, Claude `/step-by-step` 커맨드는 코드 작성을 `codex exec`에 위임했음
-- 변경: `eli5`, `hallmark`, `ip-as-logo`, `flow-first`, `intent-first`, `home-server-2`, `learn-by-implementing`, `run-android-app`, `github-pr-review`, `android-emulator-lease`, `document-memory-routing`을 `skills/`로 옮기고 `.agents` 경로, AGENTS.md 기준, 스킬 안의 수동 사용량 기록을 Claude에 맞게 바꿈. `terra-parallel-pr-review`는 `parallel-pr-review`로, `usage-stats`는 `PreToolUse(Skill)`·`UserPromptSubmit` 훅 기록 방식으로 다시 씀. `commands/step-by-step.md` 삭제(같은 이름 스킬이 Claude 직접 구현을 담당)
-- 이유: 주 사용 에이전트를 Codex에서 Claude Code로 옮기기 위해
-- 영향 파일: `skills/{eli5,hallmark,ip-as-logo,flow-first,intent-first,home-server-2,learn-by-implementing,run-android-app,github-pr-review,android-emulator-lease,document-memory-routing,parallel-pr-review,usage-stats}/`, `commands/step-by-step.md`, `README.md`. 로컬 `~/.claude/settings.json`에 사용량 훅 2개 등록
-
-### 2026-10-15 - 신규 추가: `android-emulator-lease`
-- 기존: 병렬 Codex 세션이 같은 AVD와 adb 서버를 공유해 다른 작업의 에뮬레이터를 선택하거나 종료할 수 있었음
-- 변경: 세션별 AVD 임대 도구와 전역 PreToolUse 가드를 추가하고 Android 실행 스킬에 명시적 serial 사용과 소유권 확인 절차를 연결
-- 이유: 워크트리와 무관하게 머신 전체에서 공유되는 에뮬레이터 자원의 병렬 충돌을 실행 전에 차단하기 위해
-- 영향 파일: `codex/skills/android-emulator-lease/`, `codex/hooks/android-emulator-lease-guard.py`, `codex/skills/run-android-app/SKILL.md`, `codex/sync.sh`, `codex/verify.sh`, `codex/hooks/README.md`, `README.md`
-
-### 2026-10-15 - 신규 추가: `document-memory-routing`
-- 기존: 문서를 저장하고 README만 연결하면 후속 에이전트가 읽을 프로젝트 메모리 경로가 빠질 수 있었음
-- 변경: 문서 작성과 갱신 시 AGENTS.md에 읽기 조건 및 경로를 함께 연결하는 암시적 호출 스킬 추가
-- 이유: 문서 저장과 프로젝트 메모리 라우팅을 같은 작업의 완료 조건으로 만들기 위해
-- 영향 파일: `codex/skills/document-memory-routing/SKILL.md`, `README.md`, `changelog/2026-W41.md`. 로컬 전역 `~/.codex/AGENTS.md`에도 작업별 호출 규칙 추가
+### 2026-10-20 - 신규 추가: `/resume-write`
+- 종류: 커맨드
+- 목적: '라벨: 설명', '이슈: 상황 → 한 일' 형식과 근거 경계를 지키며 전후 비교 → 승인 → 반영 → 확인 순서로 문구를 고치는 절차를 고정한다 (명시 호출 전용)
+- 영향 파일: `commands/resume-write.md`, `README.md`
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 참조.
 
 ### 지난 변경내역
+- [`2026-W42`](changelog/2026-W42.md) - 2026-10-12 ~ 10-18
 - [`2026-W41`](changelog/2026-W41.md) - 2026-10-05 ~ 10-11
 - [`2026-W40`](changelog/2026-W40.md) - 2026-09-28 ~ 10-04
 - [`2026-W39`](changelog/2026-W39.md) - 2026-09-21 ~ 09-27
