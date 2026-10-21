@@ -175,6 +175,13 @@ GitHub PR의 전체 diff와 호출 경로, 관련 테스트를 검토하고 재�
 
 발동 표현: "리뷰해줘", "PR 리뷰", "리뷰 돌려줘", "이상한 부분 코멘트해줘" 등.
 
+### sol-two-pass-pr-review (Codex)
+독립된 GPT-6.1 Sol high 리뷰어 2명으로 PR을 검토하고 수정한 뒤, 새로운 2명으로 다시 검토하고 수정한다. 차수별 수정점은 PR 인라인 리뷰로 남기고 발견 사항과 수정 내용을 같은 표 형식으로 보고한다.
+
+원본: [`codex/skills/sol-two-pass-pr-review/SKILL.md`](codex/skills/sol-two-pass-pr-review/SKILL.md)
+
+발동 표현: "$sol-two-pass-pr-review", "Sol high 2명으로 리뷰하고 수정 후 다시 독립 리뷰" 등.
+
 ### release-commit
 배포/릴리스 직후 남기는 release 커밋을 고정 포맷(`chore(release): vX.Y.Z 배포`)으로 작성한다. 직전 release 이후의 `git log`를 뽑아 변경 목록·배포 대상·버전 증감을 본문에 채워, 요약 한두 줄로 끝나 추적이 안 되는 빈약한 release 커밋을 막는다.
 
@@ -254,6 +261,12 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 | `/ao-skill-update` | 스킬/커맨드 변경 + 전역 동기화 + 커밋 + 푸시 |
 
 ## 최근 변경내역 (2026-W43)
+
+### 2026-10-21 - 신규 추가: `sol-two-pass-pr-review`
+- 기존: 단일 PR 인라인 리뷰와 독립 리뷰 스킬은 있었으나 Sol 2명의 리뷰, 수정, 새로운 2명의 재리뷰를 연결하는 Codex 절차는 없었다.
+- 변경: 차수마다 GPT-6.1 Sol high 리뷰어 2명을 새로 생성하고, 확인된 수정점의 인라인 리뷰, 수정과 검증, 동일 형식의 1차/2차 보고를 수행하는 스킬을 추가한다.
+- 이유: 리뷰 독립성을 유지하면서 각 차수의 발견 사항과 수정 근거를 추적한다.
+- 영향 파일: `codex/skills/sol-two-pass-pr-review/SKILL.md`, `README.md`
 
 ### 2026-10-20 - 신규 추가: `/resume-review`
 - 종류: 커맨드
