@@ -29,14 +29,14 @@ Codex 작업에서는 `codex/` 아래만 편집한다. 전역 설치본을 직�
 3. 스킬은 `codex/skills/<name>/`, 커맨드는 `codex/commands/<name>.md`에서 편집한다.
 4. 새 스킬·훅·하네스에는 `usage-stats` 기록 명령과 `usage-stats: <kind> <name>` 마커를 넣는다.
 5. `README.md`의 현재 ISO 주차 변경내역 맨 위에 기존·변경·이유·영향 파일을 기록한다.
-6. 스킬만 변경했다면 `bash codex/sync.sh --skills <변경한 스킬 이름...>`으로 해당 스킬만 동기화한다. 커맨드·훅까지 변경한 전체 동기화는 적용 대상 설정과 기존 변경을 먼저 확인한 뒤 `bash codex/sync.sh`를 사용한다. 사전 확인 명령이 실패하면 동기화를 실행하지 않는다.
+6. 스킬은 `bash codex/sync.sh --skills <변경한 스킬 이름...>`으로 해당 스킬만 동기화한다. GitHub 승인 훅만 변경했다면 `--hooks github-create-approval-guard`, 예약 검증 하네스만 변경했다면 `--harnesses scheduled-task-verification`을 사용한다. 여러 종류를 바꿨다면 필요한 선택 동기화를 각각 실행한다. 선택 옵션이 없는 자산의 전체 동기화는 적용 대상 설정과 기존 변경을 먼저 확인한 뒤 `bash codex/sync.sh`를 사용한다. 사전 확인 명령이 실패하면 동기화를 실행하지 않는다.
 7. 아래 검증을 실행한다.
 
    ```bash
    bash codex/verify.sh --skills <변경한 스킬 이름...>
    ```
 
-   전체 동기화를 수행한 경우 `bash codex/verify.sh`로 전체 자산도 검증한다.
+   훅과 하네스는 `verify.sh`의 동일한 `--hooks` / `--harnesses` 인수로 검증한다. 전체 동기화를 수행한 경우 `bash codex/verify.sh`로 전체 자산도 검증한다.
 
 8. 한국어 conventional commit을 만들고 `git push origin main`을 실행한다. 서명 트레일러는
    넣지 않는다.

@@ -262,6 +262,25 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 
 ## 최근 변경내역 (2026-W43)
 
+### 2026-10-21 - 승인 수명과 설치·예약 검증을 보강
+- 기존: GitHub 승인 훅은 전역 설치본에만 있었고 생성 시도 전에 승인을 소비했다. 앱 실행 스킬에는 설치본과 APK의 버전·서명 비교가 없었다.
+- 변경: 관리 원본에 승인 예약·성공 소비·실패 재시도·미확정 보류와 회귀 테스트를 추가했다. 설치 전 읽기 전용 비교와 예약 기록 검증 하네스, 훅·하네스 선택 동기화/검증을 추가했다.
+- 이유: 실패한 생성에서 재승인을 반복하거나 불명확한 생성에서 중복 생성하지 않게 하고, 설치 대상과 예약 완료 근거를 확인한다.
+- 영향 파일: `codex/hooks/github-create-approval-guard.py`, `codex/hooks/test_github_create_approval_guard.py`, `codex/hooks/README.md`, `codex/sync-github-approval.py`, `codex/sync.sh`, `codex/verify.sh`, `codex/skills/ao-skill-update/SKILL.md`, `codex/skills/run-android-app/`, `codex/harnesses/scheduled-task-verification.py`
+
+관리 자산 선택 적용:
+
+```sh
+bash codex/sync.sh --hooks github-create-approval-guard
+bash codex/verify.sh --hooks github-create-approval-guard
+bash codex/sync.sh --skills run-android-app ao-skill-update
+bash codex/verify.sh --skills run-android-app ao-skill-update
+bash codex/sync.sh --harnesses scheduled-task-verification
+bash codex/verify.sh --harnesses scheduled-task-verification
+```
+
+예약 기록 형식과 완료 근거는 전역 볼트 `workflows/scheduled-task-verification.md`를 읽는다. 승인 훅의 이벤트·복구·신뢰 범위는 [`codex/hooks/README.md`](codex/hooks/README.md)를 읽는다.
+
 ### 2026-10-21 - Codex 기존 리뷰 스킬 2종 삭제
 - 기존: `github-pr-review` 원본과 설치본, `terra-parallel-pr-review` 전역 설치본이 있었고 새 Sol 스킬은 기존 스킬의 검토 기준을 참조했다.
 - 변경: 요청한 두 Codex 스킬을 삭제하고, 필요한 호출 경로 검토와 후보 반증 기준은 Sol 스킬 안으로 옮긴다. README에서 Claude용 기존 스킬과 구분한다.

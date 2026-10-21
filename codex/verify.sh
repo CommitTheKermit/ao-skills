@@ -6,6 +6,18 @@ source_skills="$repo_root/codex/skills"
 source_hooks="$repo_root/codex/hooks"
 chaekchaek_root="/Users/ujeonghyeon/Desktop/dev/myDev/2026-chaekchaek"
 
+if [ "${1:-}" = "--hooks" ]; then
+  [ "$#" = 2 ] && [ "$2" = "github-create-approval-guard" ] || { echo 'Usage: verify.sh --hooks github-create-approval-guard' >&2; exit 2; }
+  python3 -m unittest discover -s "$source_hooks" -p 'test_github_create_approval_guard.py'
+  python3 "$repo_root/codex/sync-github-approval.py" --verify
+  exit 0
+fi
+if [ "${1:-}" = "--harnesses" ]; then
+  [ "$#" = 2 ] && [ "$2" = "scheduled-task-verification" ] || { echo 'Usage: verify.sh --harnesses scheduled-task-verification' >&2; exit 2; }
+  python3 "$repo_root/codex/harnesses/scheduled-task-verification.py" --self-test
+  cmp "$repo_root/codex/harnesses/scheduled-task-verification.py" "$HOME/.codex/harnesses/scheduled-task-verification.py"
+  exit 0
+fi
 if [ "$#" -gt 0 ]; then
   [ "$1" = "--skills" ] && [ "$#" -gt 1 ] || { echo 'Usage: verify.sh [--skills name ...]' >&2; exit 2; }
   shift
@@ -19,10 +31,19 @@ if [ "$#" -gt 0 ]; then
       python3 "$source_skills/$name/replay-audit.py" --self-test
       bash -n "$source_skills/$name/knowledge-extract.sh"
     fi
+    if [ "$name" = "run-android-app" ]; then
+      python3 -m unittest discover -s "$source_skills/$name/scripts" -p 'test_preflight_install.py'
+    fi
   done
   echo "Selected Codex skill verification passed: $*"
   exit 0
 fi
+
+python3 -m unittest discover -s "$source_hooks" -p 'test_github_create_approval_guard.py'
+python3 "$repo_root/codex/sync-github-approval.py" --verify
+python3 "$repo_root/codex/harnesses/scheduled-task-verification.py" --self-test
+cmp "$repo_root/codex/harnesses/scheduled-task-verification.py" "$HOME/.codex/harnesses/scheduled-task-verification.py"
+python3 -m unittest discover -s "$source_skills/run-android-app/scripts" -p 'test_preflight_install.py'
 
 bad_refs="$(rg -n -i --glob 'SKILL.md' --glob '*.md' --glob '*.py' --glob '*.sh' --glob '!verify.sh' \
   '(~/.claude|\.claude/|CLAUDE\.md|CLAUDE_PROJECT_DIR|AskUserQuestion|codex exec.+위임)' \

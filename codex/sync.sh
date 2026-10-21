@@ -14,6 +14,17 @@ chaekchaek_root="/Users/ujeonghyeon/Desktop/dev/myDev/2026-chaekchaek"
 chaekchaek_hooks="$chaekchaek_root/.codex/hooks"
 chaekchaek_config="$chaekchaek_root/.codex/hooks.json"
 
+if [ "${1:-}" = "--hooks" ]; then
+  [ "$#" = 2 ] && [ "$2" = "github-create-approval-guard" ] || { echo 'Usage: sync.sh --hooks github-create-approval-guard' >&2; exit 2; }
+  python3 "$repo_root/codex/sync-github-approval.py"
+  exit 0
+fi
+if [ "${1:-}" = "--harnesses" ]; then
+  [ "$#" = 2 ] && [ "$2" = "scheduled-task-verification" ] || { echo 'Usage: sync.sh --harnesses scheduled-task-verification' >&2; exit 2; }
+  mkdir -p "$HOME/.codex/harnesses"
+  cp "$repo_root/codex/harnesses/scheduled-task-verification.py" "$HOME/.codex/harnesses/"
+  exit 0
+fi
 if [ "$#" -gt 0 ]; then
   [ "$1" = "--skills" ] && [ "$#" -gt 1 ] || { echo 'Usage: sync.sh [--skills name ...]' >&2; exit 2; }
   shift
@@ -31,6 +42,10 @@ if [ "$#" -gt 0 ]; then
 fi
 
 mkdir -p "$agent_skills" "$codex_commands" "$codex_hooks" "$chaekchaek_hooks"
+
+python3 "$repo_root/codex/sync-github-approval.py"
+mkdir -p "$HOME/.codex/harnesses"
+cp "$repo_root/codex/harnesses/scheduled-task-verification.py" "$HOME/.codex/harnesses/"
 
 for source_dir in "$source_skills"/*; do
   [ -d "$source_dir" ] || continue
