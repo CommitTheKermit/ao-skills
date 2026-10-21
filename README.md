@@ -170,7 +170,7 @@ claude.ai/design export(핸드오프) CSS 를 옮길 때 빌드·`tsc`·`vitest`
 
 발동 표현: "포스트모템", "인시던트 기록", "장애 문서로 남겨", "이 문제 상황 문서화", "/incident-postmortem" 등.
 
-### github-pr-review
+### github-pr-review (Claude)
 GitHub PR의 전체 diff와 호출 경로, 관련 테스트를 검토하고 재현 가능한 문제만 변경 줄에 인라인 코멘트로 제출한다. 문제가 없으면 빈 리뷰를 만들지 않는다.
 
 발동 표현: "리뷰해줘", "PR 리뷰", "리뷰 돌려줘", "이상한 부분 코멘트해줘" 등.
@@ -233,7 +233,7 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 발동 범위: 문서화, 기록해두기, 문서 갱신 요청 전반.
 
 ### parallel-pr-review
-대화를 공유하지 않는 독립 서브에이전트 3개로 PR을 병렬 리뷰하고 주 에이전트가 후보를 직접 재검증한다. Codex의 `terra-parallel-pr-review`를 Claude Agent 도구용으로 다시 쓴 것이다.
+대화를 공유하지 않는 독립 서브에이전트 3개로 PR을 병렬 리뷰하고 주 에이전트가 후보를 직접 재검증하는 Claude용 스킬이다.
 
 발동 표현: "병렬 리뷰", "독립 리뷰 3건", "테라 병렬리뷰" 등.
 
@@ -261,6 +261,12 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 | `/ao-skill-update` | 스킬/커맨드 변경 + 전역 동기화 + 커밋 + 푸시 |
 
 ## 최근 변경내역 (2026-W43)
+
+### 2026-10-21 - Codex 기존 리뷰 스킬 2종 삭제
+- 기존: `github-pr-review` 원본과 설치본, `terra-parallel-pr-review` 전역 설치본이 있었고 새 Sol 스킬은 기존 스킬의 검토 기준을 참조했다.
+- 변경: 요청한 두 Codex 스킬을 삭제하고, 필요한 호출 경로 검토와 후보 반증 기준은 Sol 스킬 안으로 옮긴다. README에서 Claude용 기존 스킬과 구분한다.
+- 이유: 기존 리뷰 스킬 삭제 후에도 Sol 두 차례 리뷰가 독립적으로 동작하게 한다.
+- 영향 파일: `codex/skills/github-pr-review/SKILL.md` 삭제, `codex/skills/sol-two-pass-pr-review/SKILL.md`, `README.md`, 전역 설치본 두 경로 삭제
 
 ### 2026-10-21 - 신규 추가: `sol-two-pass-pr-review`
 - 기존: 단일 PR 인라인 리뷰와 독립 리뷰 스킬은 있었으나 Sol 2명의 리뷰, 수정, 새로운 2명의 재리뷰를 연결하는 Codex 절차는 없었다.
