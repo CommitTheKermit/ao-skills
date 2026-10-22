@@ -11,6 +11,10 @@ description: Android 에뮬레이터나 adb를 사용하는 모든 작업 전에
 
 Android 에뮬레이터, `adb`, `android run`, `android layout`, `android screen`, Gradle 설치 및 연결 기기 테스트를 사용하기 전에 이 절차를 적용한다. 워크트리는 Git 파일만 분리하며 AVD와 adb 서버는 머신 전체에서 공유된다.
 
+## 로컬 모바일 실행 대기열
+
+로컬 모바일 빌드·부팅·설치·연결 테스트·UI 검증 전에 [mobile-validation-queue](../mobile-validation-queue/SKILL.md)를 적용한다. 슬롯 안에서 기존 기기 임대와 설치 검사를 수행하고, 자신이 시작한 기기 정리까지 슬롯을 유지한다. 슬롯 대기를 피하려고 다른 AVD를 추가 실행하지 않는다.
+
 ## 임대 도구
 
 ```bash

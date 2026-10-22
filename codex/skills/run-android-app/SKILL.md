@@ -9,11 +9,15 @@ description: Android 앱을 에뮬레이터나 연결 기기에 빌드, 설치, 
 
 첫 동작으로 `python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record skill run-android-app >/dev/null 2>&1 || true`를 이 발동에서 한 번만 실행한다.
 
+## 로컬 모바일 실행 대기열
+
+로컬 모바일 빌드·부팅·설치·연결 테스트·UI 검증 전에 [mobile-validation-queue](../mobile-validation-queue/SKILL.md)를 적용한다. 슬롯 안에서 기존 기기 임대와 설치 검사를 수행하고, 자신이 시작한 기기 정리까지 슬롯을 유지한다. 슬롯 대기를 피하려고 다른 AVD를 추가 실행하지 않는다.
+
 ## 실행 규칙
 
 1. 대상 프로젝트, 기기, 실행할 APK를 확인한다.
 2. 에뮬레이터를 사용한다면 먼저 `android-emulator-lease` 스킬을 적용해 AVD를 임대한다. 다른 세션이 임대한 AVD를 사용하거나 종료하지 않는다.
-3. 필요한 경우 임대한 에뮬레이터를 시작하고 실제 serial을 임대에 연결한 뒤 현재 소스의 APK를 빌드한다.
+3. 대기열 슬롯 안에서 현재 소스의 APK를 먼저 빌드한다. 그다음 필요한 경우 임대한 에뮬레이터를 시작하고 실제 serial을 임대에 연결한다.
 4. 설치 직전에 아래 읽기 전용 검사를 실행한다. 대상 패키지명은 요청과 프로젝트 설정에서 확인한다. 조회 실패를 미설치로 간주하지 않는다.
 
    ```sh
