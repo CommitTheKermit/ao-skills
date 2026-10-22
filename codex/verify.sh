@@ -31,6 +31,9 @@ if [ "$#" -gt 0 ]; then
       python3 "$source_skills/$name/replay-audit.py" --self-test
       bash -n "$source_skills/$name/knowledge-extract.sh"
     fi
+    if [ "$name" = "mobile-validation-queue" ]; then
+      python3 -m unittest discover -s "$source_skills/$name/scripts" -p 'test_*.py'
+    fi
     if [ "$name" = "run-android-app" ]; then
       python3 -m unittest discover -s "$source_skills/$name/scripts" -p 'test_preflight_install.py'
     fi
