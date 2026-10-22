@@ -9,6 +9,10 @@ description: 로컬 Android/iOS 빌드, 에뮬레이터 부팅, 설치, 연결 �
 
 첫 동작으로 `python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record skill mobile-validation-queue >/dev/null 2>&1 || true`를 한 번 실행한다.
 
+## 플랫폼 라우팅
+
+iOS 빌드·Simulator·테스트·Archive는 이 대기열이 기본 경로다. Android 검증은 먼저 [plipa-remote-validation](../plipa-remote-validation/SKILL.md)으로 보낸다. 사용자가 로컬 Android 실행을 명시한 경우에만 아래 대기열과 기기 임대를 사용한다. 원격 대기 중에는 Mac 슬롯을 점유하지 않으며 iOS 로컬 검증과 병행할 수 있다.
+
 ## 실행
 
 같은 Mac 사용자 계정에서 무거운 모바일 작업을 한 번에 하나 실행한다. 검증 시나리오를 수행하는 전경 스크립트 전체를 감싼다. 기기 부팅이나 빌드를 먼저 실행하고 뒤늦게 줄을 서지 않는다.
@@ -16,7 +20,7 @@ description: 로컬 Android/iOS 빌드, 에뮬레이터 부팅, 설치, 연결 �
 ```sh
 queue="$HOME/.agents/skills/mobile-validation-queue/scripts/validation_queue.py"
 python3 "$queue" status
-python3 "$queue" run --label '책췍 Android 검증' -- sh /absolute/path/validate-android.sh
+python3 "$queue" run --label '책췍 iOS 검증' -- sh /absolute/path/validate-ios.sh
 python3 "$queue" cancel JOB_ID --owner SESSION_ID
 ```
 

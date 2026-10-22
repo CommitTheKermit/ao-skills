@@ -9,6 +9,12 @@ description: Android 앱을 에뮬레이터나 연결 기기에 빌드, 설치, 
 
 첫 동작으로 `python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record skill run-android-app >/dev/null 2>&1 || true`를 이 발동에서 한 번만 실행한다.
 
+## 플랫폼 실행 경로
+
+Android 검증은 먼저 [plipa-remote-validation](../plipa-remote-validation/SKILL.md)을 읽고 원격으로 제출한다. 저장소·허용 ref·정확한 소스 SHA·프로필 지원 범위를 확인한다. 원격 설정 누락, 장애 또는 미지원 검증을 이유로 자동으로 로컬 실행하지 않는다. 사용자가 로컬 실행이나 특정 로컬 기기를 명시한 경우에만 아래 로컬 절차를 적용하며, [mobile-validation-queue](../mobile-validation-queue/SKILL.md)의 슬롯 안에서 빌드와 기기 임대·설치·정리를 수행한다.
+
+원격 smoke는 검증 후 기기를 정리한다. 사용자에게 계속 조작 가능한 앱이나 로컬 플리파 화면을 남기는 실행 요청을 smoke 성공으로 대체하지 않는다.
+
 ## 로컬 모바일 실행 대기열
 
 로컬 모바일 빌드·부팅·설치·연결 테스트·UI 검증 전에 [mobile-validation-queue](../mobile-validation-queue/SKILL.md)를 적용한다. 슬롯 안에서 기존 기기 임대와 설치 검사를 수행하고, 자신이 시작한 기기 정리까지 슬롯을 유지한다. 슬롯 대기를 피하려고 다른 AVD를 추가 실행하지 않는다.

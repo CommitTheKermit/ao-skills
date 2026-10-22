@@ -262,6 +262,8 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 
 ## 최근 변경내역 (2026-W43)
 
+- Android 기본 검증을 플리파 원격으로, iOS를 로컬 대기열로 연결한다. 기존 로컬 실행 기본값으로 인한 Mac 경합을 막고 미지원 검증의 자동 로컬 전환을 금지한다. 영향: 원격·대기열·담당 등록 규칙, Android 실행·임대·AAB·심사·플리파 run·PR 리뷰 스킬.
+
 - 플리파 원격 검증 스킬과 SSH 클라이언트를 추가한다. 고정 커밋 제출·대기·취소·결과 ZIP 수집을 서버 실행기와 연결하고 Mac 대기열을 점유하지 않는다. 영향: `codex/skills/plipa-remote-validation`.
 - 기존 브랜치 재사용·AVD 임대에 기능 담당 등록과 로컬 모바일 FIFO 실행기를 추가한다. 여러 세션의 중복 구현과 빌드·기기 경합을 줄인다. `codex/skills/task-coordination`, `mobile-validation-queue`, `android-emulator-lease`, `run-android-app`, `sol-two-pass-pr-review`를 갱신하고, 설치본에만 있던 플리파 `run`을 관리 원본으로 편입한다. 원격 플리파는 제외한다.
 

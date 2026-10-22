@@ -9,6 +9,14 @@ description: Mac에서 홈서버 플리파에 정확한 커밋의 Android 빌드
 
 첫 동작으로 `python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record skill plipa-remote-validation >/dev/null 2>&1 || true`를 한 번 실행한다.
 
+## 기본 라우팅과 지원 경계
+
+- 다른 세션에서도 Android 빌드·테스트·설치·실행 검증의 기본 진입점은 이 스킬이다. 현재 서버 설정은 책췍용이다. 제출 전에 대상 저장소와 서버 설정의 저장소·허용 ref·프로필이 일치하는지 확인한다. 다른 프로젝트를 책췍 프로필에 제출하지 않는다.
+- 검증할 변경이 포함된 40자리 SHA를 사용한다. 로컬 미커밋 변경이나 서버에서 가져올 수 없는 커밋은 검증되지 않는다. 제출을 위해 보호 브랜치에 직접 push하거나 이전 커밋으로 대체하지 않는다.
+- 설정 누락, 허용 ref 불일치, 장애 또는 미지원 범위는 차단 사유와 미검증 항목을 보고한다. 자동으로 Mac 빌드·AVD 실행으로 전환하지 않는다. 사용자가 로컬 실행을 명시한 경우에만 `mobile-validation-queue`와 `android-emulator-lease`를 적용한다.
+- iOS는 `mobile-validation-queue`를 사용한다. 양 플랫폼 비교 시 동일 소스 SHA를 기준으로 하고 로컬 변경 여부도 기록한다. 서로 다른 호스트의 Android 원격 작업과 iOS 로컬 작업은 병행할 수 있다.
+- 결과의 소스 SHA·프로필이 제출한 값과 일치하는지 확인하고 결과 ZIP을 수집한다. 빌드·단위 테스트·설치·실행·요청한 UI 시나리오를 각각 보고하며 smoke 밖의 시나리오는 미검증으로 남긴다.
+
 ## 실행 경로
 
 `~/.config/plipa-remote/client.json`의 SSH 별칭과 서버 실행기 설정을 사용한다. 이 파일은 Git 밖에 두고 접속 주소·사용자·개인키·원격 절대경로를 문서나 출력에 복사하지 않는다. 원격 설정이 없으면 추측하지 않는다. 서버 접근·설정 변경에는 `home-server-2`를 적용한다.
