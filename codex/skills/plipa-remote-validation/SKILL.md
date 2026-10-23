@@ -13,9 +13,19 @@ description: Mac에서 홈서버 플리파에 정확한 커밋의 Android 빌드
 
 - 다른 세션에서도 Android 빌드·테스트·설치·실행 검증의 기본 진입점은 이 스킬이다. 현재 서버 설정은 책췍용이다. 제출 전에 대상 저장소와 서버 설정의 저장소·허용 ref·프로필이 일치하는지 확인한다. 다른 프로젝트를 책췍 프로필에 제출하지 않는다.
 - 검증할 변경이 포함된 40자리 SHA를 사용한다. 로컬 미커밋 변경이나 서버에서 가져올 수 없는 커밋은 검증되지 않는다. 제출을 위해 보호 브랜치에 직접 push하거나 이전 커밋으로 대체하지 않는다.
-- 설정 누락, 허용 ref 불일치, 장애 또는 미지원 범위는 차단 사유와 미검증 항목을 보고한다. 자동으로 Mac 빌드·AVD 실행으로 전환하지 않는다. 사용자가 로컬 실행을 명시한 경우에만 `mobile-validation-queue`와 `android-emulator-lease`를 적용한다.
+- 원격 접수 전에 아래 오프라인 분기를 확인한다. 서버 꺼짐·원격 연결 불가가 확인되고 미확정 접수가 없으면 [jev-local-validation](../jev-local-validation/SKILL.md)으로 추가 승인 없이 전환한다. 설정 누락, 인증·403, 허용 ref 불일치와 미지원 범위는 오프라인이 아니며 사유와 미검증 범위를 보고한다.
 - iOS는 `mobile-validation-queue`를 사용한다. 양 플랫폼 비교 시 동일 소스 SHA를 기준으로 하고 로컬 변경 여부도 기록한다. 서로 다른 호스트의 Android 원격 작업과 iOS 로컬 작업은 병행할 수 있다.
 - 결과의 소스 SHA·프로필이 제출한 값과 일치하는지 확인하고 결과 ZIP을 수집한다. 빌드·단위 테스트·설치·실행·요청한 UI 시나리오를 각각 보고하며 smoke 밖의 시나리오는 미검증으로 남긴다.
+
+## 원격 접수 전 오프라인 분기
+
+1. `~/.config/plipa-remote/client.json`이 있는지와 대상 저장소·ref·프로필을 확인한다. 설정이 없거나 다른 저장소이면 서버 꺼짐으로 추정하지 않는다.
+2. 아래 클라이언트의 `list`를 한 번 실행해 원격 실행기에 읽기 전용으로 연결한다. 실패하면 [home-server-2](../home-server-2/SKILL.md)의 제한된 Tailscale·SSH 상태 조회로 원인을 확인한다. 클라이언트의 일반적인 연결 오류 문구만으로 물리적인 전원 꺼짐을 단정하지 않는다. 서버를 켜거나 서비스를 수정하는 요청으로 확장하지 않는다.
+3. 서버 꺼짐 또는 SSH/네트워크의 연결 거부·시간 초과 등 원격 연결 불가가 확인되면, 알고 있는 request-id/job-id와 이전 접수 시도를 확인한다. **이번 검증을 아직 submit하지 않았고 같은 검증의 미확정 접수가 없을 때** `jev-local-validation`으로 전환한다. 전환 사유를 한 줄 알리고 같은 작업의 로컬 빌드·테스트·Jev UI 검증을 수행한다. 매번 로컬 실행 승인을 다시 묻지 않는다.
+4. `submit` 전송 뒤 연결이 끊겼거나 접수 여부가 불명확하면 원격 작업이 살아 있을 수 있다. 기존 request-id/job-id를 조회해 접수되지 않음 또는 취소·종료를 확인하기 전에는 로컬 작업을 중복 시작하지 않는다. 확인할 수 없으면 그 범위는 보류한다.
+5. 401/403, SSH 인증 실패·호스트 키 오류, 설정·프로필·ref 오류, API 스키마 오류, 빌드·테스트 실패, 대기 중인 작업은 오프라인 전환 조건이 아니다. Jev 실패도 Codex 직접 조작으로 자동 전환하지 않는다.
+
+이 분기는 에이전트가 따르는 실행 절차다. `remote_validation.py`가 오류를 감지해 자동으로 로컬 프로세스를 실행하는 기능을 추가한 것은 아니다.
 
 ## 실행 경로
 
@@ -23,6 +33,7 @@ description: Mac에서 홈서버 플리파에 정확한 커밋의 Android 빌드
 
 ```sh
 client="$HOME/.agents/skills/plipa-remote-validation/scripts/remote_validation.py"
+python3 "$client" list
 python3 "$client" submit --sha <40자리-커밋-SHA> --profile android-smoke --request-id <고정된-요청-ID>
 python3 "$client" wait <작업-ID>
 python3 "$client" results <작업-ID> --output /absolute/path/result.zip

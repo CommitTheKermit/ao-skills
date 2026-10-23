@@ -11,7 +11,7 @@ description: 플리파의 로컬 서비스와 Android 에뮬레이터를 시작�
 
 ## 플랫폼 실행 경로
 
-Android 검증은 먼저 [plipa-remote-validation](../plipa-remote-validation/SKILL.md)을 읽고 원격으로 제출한다. 저장소·허용 ref·정확한 소스 SHA·프로필 지원 범위를 확인한다. 원격 설정 누락, 장애 또는 미지원 검증을 이유로 자동으로 로컬 실행하지 않는다. 사용자가 로컬 실행이나 특정 로컬 기기를 명시한 경우에만 아래 로컬 절차를 적용하며, [mobile-validation-queue](../mobile-validation-queue/SKILL.md)의 슬롯 안에서 빌드와 기기 임대·설치·정리를 수행한다.
+Android 검증은 먼저 [plipa-remote-validation](../plipa-remote-validation/SKILL.md)으로 원격 접수 전 연결 상태와 저장소·허용 ref·정확한 소스 SHA·프로필을 확인한다. 서버 꺼짐 또는 원격 연결 불가가 확인되고 미확정 원격 접수가 없으면, 추가 로컬 실행 승인 없이 [jev-local-validation](../jev-local-validation/SKILL.md)으로 전환한다. 인증·403·설정 오류, ref 불일치와 미지원 범위는 오프라인으로 취급하지 않는다. 사용자가 로컬 실행이나 특정 로컬 기기를 명시한 경우에도 아래 로컬 절차와 [mobile-validation-queue](../mobile-validation-queue/SKILL.md)를 적용해 빌드·기기 임대·설치·정리를 한 슬롯 안에서 수행한다. Jev의 UI 결과로 AAB·Lint·단위 테스트를 대체하지 않는다.
 
 원격 smoke는 검증 후 기기를 정리한다. 사용자에게 계속 조작 가능한 앱이나 로컬 플리파 화면을 남기는 실행 요청을 smoke 성공으로 대체하지 않는다.
 

@@ -6,3 +6,5 @@
 - 동일 기능 담당 등록을 수정할 때는 [task-coordination](skills/task-coordination/SKILL.md)을 먼저 읽는다. 전역 규칙의 관리 블록 원본은 [global-rules.md](skills/task-coordination/references/global-rules.md)이며, 적용 시 해당 블록만 교체하고 나머지 사용자 규칙은 보존한다.
 - 모바일 실행 대기열을 수정할 때는 [mobile-validation-queue](skills/mobile-validation-queue/SKILL.md)를 먼저 읽는다. 프로세스 통합 검증은 `python3 -m unittest discover -s codex/skills/mobile-validation-queue/scripts -p 'test_*.py'`로 수행한다.
 - 변경한 설치형 스킬만 `codex/sync.sh --skills ...`로 동기화하고 `codex/verify.sh --skills ...`로 확인한다.
+
+- 원격 오프라인 대체 경로와 Jev 로컬 검증을 변경할 때는 [Jev 로컬 검증](skills/jev-local-validation/SKILL.md)을 먼저 읽는다. 접수 전 연결 실패와 미확정 원격 접수를 구분하고 빌드·UI 검증·정리의 근거를 유지한다.

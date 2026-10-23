@@ -11,7 +11,7 @@ description: 로컬 Android/iOS 빌드, 에뮬레이터 부팅, 설치, 연결 �
 
 ## 플랫폼 라우팅
 
-iOS 빌드·Simulator·테스트·Archive는 이 대기열이 기본 경로다. Android 검증은 먼저 [plipa-remote-validation](../plipa-remote-validation/SKILL.md)으로 보낸다. 사용자가 로컬 Android 실행을 명시한 경우에만 아래 대기열과 기기 임대를 사용한다. 원격 대기 중에는 Mac 슬롯을 점유하지 않으며 iOS 로컬 검증과 병행할 수 있다.
+iOS 빌드·Simulator·테스트·Archive는 이 대기열이 기본 경로다. Android 검증은 먼저 [plipa-remote-validation](../plipa-remote-validation/SKILL.md)으로 보낸다. 플리파 오프라인 대체 경로는 [jev-local-validation](../jev-local-validation/SKILL.md)으로 연결한다. 원격 접수 전 서버 꺼짐·연결 불가가 확인되고 미확정 접수가 없는 경우에는 추가 승인 없이 아래 대기열과 기기 임대를 사용한다. 사용자가 로컬 Android 실행을 명시한 경우에도 같은 절차를 적용한다. 원격 대기 중에는 Mac 슬롯을 점유하지 않으며 iOS 로컬 검증과 병행할 수 있다.
 
 ## 실행
 
