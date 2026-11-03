@@ -13,7 +13,7 @@ description: 플리파 서버 꺼짐·연결 불가가 원격 접수 전에 확�
 
 - [plipa-remote-validation](../plipa-remote-validation/SKILL.md)의 접수 전 오프라인 분기를 통과했거나 사용자가 로컬 Android 검증을 명시하면 사용한다. 이 오프라인 대체 경로는 상시 허용되어 있어 매번 실행 승인을 묻지 않는다. 인증·403·설정 문제와 미확정 원격 접수를 우회하지 않는다.
 - 대상 앱의 Android 스코프·정확한 소스 SHA·변경 여부·검증할 사용자 행동과 성공 조건을 정한다. 다른 프로젝트에도 사용할 수 있지만 책췍 패키지나 원격 프로필을 기본값으로 강제하지 않는다.
-- 기본 실행기는 `~/.agents/skills/jev-local-validation/scripts/run.py`다. `python3 "$HOME/.agents/skills/jev-local-validation/scripts/run.py" --runtime-info`로 고정 설치본의 소스 SHA·버전·모듈 경로를 먼저 확인한다. `~/.local/share/jev-mobile-use/current`가 가리키는 비편집 설치본을 격리 실행하며 개발 체크아웃이나 `PYTHONPATH`를 사용하지 않는다. 설치본이 없거나 영수증이 다르면 중단한다. 소스 안내는 `/Users/ujeonghyeon/Desktop/dev/myDev/jev-mobile-use-driver/docs/usage.md`와 `docs/integrations.md`를 읽되 다른 세션의 브랜치를 바꾸거나 pull/reset하지 않는다.
+- 기본 실행기는 `~/.agents/skills/jev-local-validation/scripts/run.py`다. `python3 "$HOME/.agents/skills/jev-local-validation/scripts/run.py" --runtime-info`로 고정 설치본의 소스 SHA·버전·모듈 경로를 먼저 확인한다. `~/.local/share/jev-mobile-use/current`가 가리키는 비편집 설치본을 격리 실행하며 개발 체크아웃이나 `PYTHONPATH`를 사용하지 않는다. 설치본이 없거나 영수증이 다르면 중단한다. 소스 안내는 Jev 실행기 저장소의 `docs/usage.md`와 `docs/integrations.md`를 읽되 다른 세션의 브랜치를 바꾸거나 pull/reset하지 않는다.
 - 원격 smoke와 로컬 UI 시나리오의 검증 범위를 맞춘다. 단위 테스트·빌드·설치·전면 실행·UI 시나리오는 각각 별도 근거다. Jev 트리 성공은 서버 저장, 시각적 완성도, AAB·Lint나 iOS 성공을 뜻하지 않는다.
 
 ## 준비와 실행
@@ -24,7 +24,7 @@ description: 플리파 서버 꺼짐·연결 불가가 원격 접수 전에 확�
 4. [android-emulator-lease](../android-emulator-lease/SKILL.md)로 AVD를 임대·부팅·serial 바인딩한다. 이미 임대 중이거나 소유자가 불명확한 기기는 조작하지 않는다. 모든 기기 명령에 동일한 serial을 명시한다.
 5. [run-android-app](../run-android-app/SKILL.md)의 `preflight-install.py`로 패키지·버전·서명을 검사한 뒤 데이터 보존 설치와 전면 실행을 수행한다. 검사 실패 시 삭제·강제 다운그레이드로 우회하지 않는다. 성공 조건을 확인할 수 있는 초기 상태로 준비한다.
    기본 Droidrun 드라이버는 Mobilerun Portal이 필요하다. 확인된 조합은 `mobilerun-core-local==0.6.3`과 Portal 0.7.27이다. Portal 준비도 같은 대기열·임대 안에서 패키지·버전·서명을 검사하고 데이터 보존 설치한다. 기존 접근성 서비스 목록을 보존하며 필요한 서비스만 추가하고 변경 전 설정을 기록해 정리 시 복원한다. 기본 삭제 옵션이 있는 upstream 설치 도우미를 무조건 호출하지 않는다. 준비되지 않았으면 중단하고 ADB 드라이버로 자동 전환하지 않는다. 드라이버가 연결 중 바꾼 키보드는 정상 종료 시 복원하며 강제 종료했다면 기존 설정을 확인한다.
-6. `TYPESAFE_API_KEY`를 환경변수로 주입한다. 이미 승인된 Git 밖의 비밀 환경파일을 사용할 수 있으며 현재 개인 파일은 `~/.config/plipa-jev/temporary.env`다. 키 내용을 출력·복사·문서화하지 않는다. CLI가 .env를 자동으로 읽는다고 가정하지 않는다. 키가 없거나 만료되면 실행을 중단하고 사유를 보고한다.
+6. `TYPESAFE_API_KEY`를 환경변수로 주입한다. 이미 승인된 Git 밖의 비밀 환경파일을 사용할 수 있다. 키 내용을 출력·복사·문서화하지 않는다. CLI가 .env를 자동으로 읽는다고 가정하지 않는다. 키가 없거나 만료되면 실행을 중단하고 사유를 보고한다.
 7. 동일한 대기열 작업 안에서 아래 CLI를 형식 검사 후 실행한다. `scenario`, `serial`, `output`은 확인한 절대경로와 소유 serial로 설정한다. 출력 폴더는 실행별 새 경로를 쓴다.
 
    ```sh

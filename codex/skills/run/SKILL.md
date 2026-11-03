@@ -21,11 +21,11 @@ Android 검증은 먼저 [plipa-remote-validation](../plipa-remote-validation/SK
 
 ## 실행 대상
 
-- 플리파: `/Users/ujeonghyeon/Desktop/dev/myDev/plipa`
+- 플리파: `~/Desktop/dev/myDev/plipa`
 - 기본 AVD: `Pixel_6a_API_33_2`
 - 기본 대상 앱: `com.chamsae.chaekchaek.integration`
 - 기본 서비스: `http://127.0.0.1:4317/`
-- APK 소스 위치: `/Users/ujeonghyeon/Desktop/dev/myDev/2026-chaekchaek/android`
+- APK 소스 위치: `~/Desktop/dev/myDev/2026-chaekchaek/android`
 
 위 값은 현재 기본값이다. 사용자의 이번 지시를 우선하고, 플리파의 `README.md`, `플리파.command`, `device.py`, `emulator.py`, `server.py`를 실행 방법과 API의 기준으로 확인한다. 경로가 없으면 임의 프로젝트로 대체하지 않는다. `PLIPA_PORT`·`PLIPA_DATA`가 지정됐으면 동일한 설정으로 접속한다.
 
