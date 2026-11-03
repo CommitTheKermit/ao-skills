@@ -275,6 +275,13 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 - 목적: 슬랙, 일지, 회고, 공식 글, 업무 메모를 사용자 본인의 말투로 쓰거나 바꾼다.
 - 영향 파일: `skills/ao-voice/`, `README.md`, `changelog/2026-W43.md`
 
+### 2026-11-03 - 플리파 원격 검증·Jev 로컬 검증 경로를 main에 반영
+- 기존: Jev 로컬 검증이 개발 체크아웃과 PYTHONPATH를 직접 사용했다. 변경: 설치 영수증을 확인하는 공용 실행기로 고정 설치본을 격리 실행하고 Droidrun·agent 모드를 강제한다. 이유: 세션별 브랜치 차이로 예전 드라이버를 실행하지 않게 한다. 영향: `jev-local-validation` 실행기·회귀 검사·Portal 및 입력 안내, `plipa-remote-validation` 전환 경로, `codex/verify.sh`.
+- 기존 원격 장애 시 로컬 전환 금지에서, 접수 전 서버 꺼짐·연결 불가와 미확정 접수 없음이 확인되면 Jev 로컬 검증으로 이어지도록 변경한다. Mac 대기열·기기 임대·설치 검사는 유지하고 403·인증·설정 오류와 AAB·Lint 미지원은 구분한다. 영향: `jev-local-validation` 신규, 원격·앱 실행·기기 임대·모바일 대기열·플리파 run·AAB·심사 스킬, 전역 규칙 원본과 문서 라우팅.
+- Android 기본 검증을 플리파 원격으로, iOS를 로컬 대기열로 연결한다. 기존 로컬 실행 기본값으로 인한 Mac 경합을 막고 미지원 검증의 자동 로컬 전환을 금지한다. 영향: 원격·대기열·담당 등록 규칙, Android 실행·임대·AAB·심사·플리파 run·PR 리뷰 스킬.
+- 플리파 원격 검증 스킬과 SSH 클라이언트를 추가한다. 고정 커밋 제출·대기·취소·결과 ZIP 수집을 서버 실행기와 연결하고 Mac 대기열을 점유하지 않는다. 영향: `codex/skills/plipa-remote-validation`.
+- 기존 브랜치 재사용·AVD 임대에 기능 담당 등록과 로컬 모바일 FIFO 실행기를 추가한다. 여러 세션의 중복 구현과 빌드·기기 경합을 줄인다. `codex/skills/task-coordination`, `mobile-validation-queue`, `android-emulator-lease`, `run-android-app`, `sol-two-pass-pr-review`를 갱신하고, 설치본에만 있던 플리파 `run`을 관리 원본으로 편입한다. 원격 플리파는 제외한다.
+
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 참조.
 
 ### 지난 변경내역

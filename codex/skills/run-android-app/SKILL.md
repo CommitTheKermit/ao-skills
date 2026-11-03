@@ -9,11 +9,21 @@ description: Android 앱을 에뮬레이터나 연결 기기에 빌드, 설치, 
 
 첫 동작으로 `python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record skill run-android-app >/dev/null 2>&1 || true`를 이 발동에서 한 번만 실행한다.
 
+## 플랫폼 실행 경로
+
+Android 검증은 먼저 [plipa-remote-validation](../plipa-remote-validation/SKILL.md)으로 원격 접수 전 연결 상태와 저장소·허용 ref·정확한 소스 SHA·프로필을 확인한다. 서버 꺼짐 또는 원격 연결 불가가 확인되고 미확정 원격 접수가 없으면, 추가 로컬 실행 승인 없이 [jev-local-validation](../jev-local-validation/SKILL.md)으로 전환한다. 인증·403·설정 오류, ref 불일치와 미지원 범위는 오프라인으로 취급하지 않는다. 사용자가 로컬 실행이나 특정 로컬 기기를 명시한 경우에도 아래 로컬 절차와 [mobile-validation-queue](../mobile-validation-queue/SKILL.md)를 적용해 빌드·기기 임대·설치·정리를 한 슬롯 안에서 수행한다. Jev의 UI 결과로 AAB·Lint·단위 테스트를 대체하지 않는다.
+
+원격 smoke는 검증 후 기기를 정리한다. 사용자에게 계속 조작 가능한 앱이나 로컬 플리파 화면을 남기는 실행 요청을 smoke 성공으로 대체하지 않는다.
+
+## 로컬 모바일 실행 대기열
+
+로컬 모바일 빌드·부팅·설치·연결 테스트·UI 검증 전에 [mobile-validation-queue](../mobile-validation-queue/SKILL.md)를 적용한다. 슬롯 안에서 기존 기기 임대와 설치 검사를 수행하고, 자신이 시작한 기기 정리까지 슬롯을 유지한다. 슬롯 대기를 피하려고 다른 AVD를 추가 실행하지 않는다.
+
 ## 실행 규칙
 
 1. 대상 프로젝트, 기기, 실행할 APK를 확인한다.
 2. 에뮬레이터를 사용한다면 먼저 `android-emulator-lease` 스킬을 적용해 AVD를 임대한다. 다른 세션이 임대한 AVD를 사용하거나 종료하지 않는다.
-3. 필요한 경우 임대한 에뮬레이터를 시작하고 실제 serial을 임대에 연결한 뒤 현재 소스의 APK를 빌드한다.
+3. 대기열 슬롯 안에서 현재 소스의 APK를 먼저 빌드한다. 그다음 필요한 경우 임대한 에뮬레이터를 시작하고 실제 serial을 임대에 연결한다.
 4. 설치 직전에 아래 읽기 전용 검사를 실행한다. 대상 패키지명은 요청과 프로젝트 설정에서 확인한다. 조회 실패를 미설치로 간주하지 않는다.
 
    ```sh

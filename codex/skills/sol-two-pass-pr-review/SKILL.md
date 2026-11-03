@@ -15,6 +15,10 @@ description: 독립된 GPT-6.1 Sol high 리뷰어 2명의 PR 리뷰를 수행하
 
 리뷰어는 기존대로 필요한 테스트 명령만 메인 에이전트에 제안한다. 메인 에이전트가 Android 검증을 실행할 때는 [plipa-remote-validation](../plipa-remote-validation/SKILL.md)을, iOS 검증에는 [mobile-validation-queue](../mobile-validation-queue/SKILL.md)를 사용한다. 원격 미지원 검증을 자동으로 로컬에서 실행하지 않는다. 리뷰어별 빌드나 기기 실행을 추가하지 않는다.
 
+## 모바일 검증 실행 경로
+
+리뷰어는 기존대로 필요한 테스트 명령만 메인 에이전트에 제안한다. 메인 에이전트가 Android 검증을 실행할 때는 [plipa-remote-validation](../plipa-remote-validation/SKILL.md)을, iOS 검증에는 [mobile-validation-queue](../mobile-validation-queue/SKILL.md)를 사용한다. 원격 미지원 검증을 자동으로 로컬에서 실행하지 않는다. 리뷰어별 빌드나 기기 실행을 추가하지 않는다.
+
 ## 범위와 기준
 
 - 저장소와 하위 `AGENTS.md`를 읽고 요구사항을 짧게 재진술한다. PR은 URL, 번호 또는 현재 브랜치의 PR로 확정한다. 결과를 바꾸는 요구사항이나 대상이 불명확하면 먼저 질문한다.

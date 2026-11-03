@@ -9,6 +9,12 @@ description: Android 프로젝트에서 Play Console 제출용 서명 release AA
 
 첫 동작으로 `python3 "$HOME/.agents/skills/usage-stats/scripts/usage_stats.py" record skill build-signed-aab >/dev/null 2>&1 || true`를 이 발동에서 한 번만 실행한다.
 
+## 플랫폼 실행 경로
+
+Android 검증은 먼저 [plipa-remote-validation](../plipa-remote-validation/SKILL.md)으로 원격 접수 전 연결 상태와 저장소·허용 ref·정확한 소스 SHA·프로필을 확인한다. 서버 꺼짐 또는 원격 연결 불가가 확인되고 미확정 원격 접수가 없으면, 추가 로컬 실행 승인 없이 [jev-local-validation](../jev-local-validation/SKILL.md)으로 전환한다. 인증·403·설정 오류, ref 불일치와 미지원 범위는 오프라인으로 취급하지 않는다. 사용자가 로컬 실행이나 특정 로컬 기기를 명시한 경우에도 아래 로컬 절차와 [mobile-validation-queue](../mobile-validation-queue/SKILL.md)를 적용해 빌드·기기 임대·설치·정리를 한 슬롯 안에서 수행한다. Jev의 UI 결과로 AAB·Lint·단위 테스트를 대체하지 않는다.
+
+현재 `android-smoke`는 release APK·지정 단위 테스트·설치와 실행만 지원한다. AAB 생성, Lint 및 심사 전체 검증은 포함하지 않는다. 아래 명령은 해당 작업을 지원하는 원격 프로필 또는 명시적으로 허용된 로컬 실행 경로가 확보된 뒤 수행한다. APK 성공을 AAB나 Lint 통과로 보고하지 않는다.
+
 ## 절차
 
 1. 저장소와 Android 스코프의 `AGENTS.md`를 읽는다.
