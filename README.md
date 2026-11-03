@@ -9,6 +9,9 @@ ao-skills/
 ├── skills/
 │   ├── ao-skill-update/     # 스킬/커맨드 변경 워크플로우 스킬
 │   │   └── SKILL.md
+│   ├── ao-voice/            # 사용자 말투로 글쓰기 스킬
+│   │   ├── SKILL.md
+│   │   └── references/      # 레지스터별 규칙과 예시
 │   ├── check-android-review-readiness/ # Play 심사 준비 상태 점검 스킬
 │   │   └── SKILL.md
 │   ├── claude-design-handoff/ # claude.ai/design 핸드오프 링크로 디자인 소스 최신화 스킬
@@ -245,6 +248,11 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 ### eli5 · hallmark · ip-as-logo
 외부에서 가져와 Codex에 설치해 쓰던 스킬을 그대로 옮겼다. 각각 쉬운 설명, 안티 AI 슬롭 디자인, 의인화 IP 로고 생성용이다.
 
+### ao-voice
+사용자 본인의 말투로 글을 쓰거나 기존 글을 그 말투로 바꾼다. 슬랙, 일지, 회고, 공식 글, 업무 메모 다섯 레지스터로 나눠 규칙과 빈도 상한을 `references/`에 둔다.
+
+발동 표현: "내 말투로", "내가 쓴 것처럼", "내 문체로", "/ao-voice" 등.
+
 ## 커맨드 목록
 
 | 커맨드 | 설명 |
@@ -260,64 +268,17 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 | `/resume-write` | 이력서·포트폴리오 문구를 라벨·이슈 형식과 근거 경계에 맞춰 고침 (명시 호출 전용) |
 | `/ao-skill-update` | 스킬/커맨드 변경 + 전역 동기화 + 커밋 + 푸시 |
 
-## 최근 변경내역 (2026-W43)
+## 최근 변경내역 (2026-W45)
 
-### 2026-10-23 - Sol 리뷰의 불필요한 2차 실행 생략
-- 기존: 1차 리뷰에서 발견 사항이 없어도 새 리뷰어 2명으로 2차를 수행했다.
-- 변경: 1차 두 리뷰가 완료되고 재확인한 수정점이 없으면 종료하며, 2차는 생략 사유로 보고한다.
-- 이유: 수정할 문제가 없는 같은 코드를 반복 검토하지 않기 위해서다.
-- 영향 파일: `codex/skills/sol-two-pass-pr-review/SKILL.md`, `README.md`
-
-### 2026-10-22 - socratic-learn 설명 방식에 ASD-STE100 규칙 적용
-- 기존: `/socratic-learn`에는 설명 문장 규칙이 없었고, ASD-STE100 규칙과 용어 블록은 learning 프로젝트의 `android-study` 스킬에만 있었다.
-- 변경: 한국어용 ASD-STE100 작성 규칙과 매 사이클 맨 앞의 용어 블록을 `/socratic-learn` 사이클 규칙에 추가했다.
-- 이유: 용어를 먼저 정의하고 그 용어에만 맞춰 설명하면 혼동과 복잡성이 줄어, 다른 주제 학습에도 같은 효과를 얻기 위해서다.
-- 영향 파일: `commands/socratic-learn.md`, `README.md`
-
-### 2026-10-21 - 승인 수명과 설치·예약 검증을 보강
-- 기존: GitHub 승인 훅은 전역 설치본에만 있었고 생성 시도 전에 승인을 소비했다. 앱 실행 스킬에는 설치본과 APK의 버전·서명 비교가 없었다.
-- 변경: 관리 원본에 승인 예약·성공 소비·실패 재시도·미확정 보류와 회귀 테스트를 추가했다. 설치 전 읽기 전용 비교와 예약 기록 검증 하네스, 훅·하네스 선택 동기화/검증을 추가했다.
-- 이유: 실패한 생성에서 재승인을 반복하거나 불명확한 생성에서 중복 생성하지 않게 하고, 설치 대상과 예약 완료 근거를 확인한다.
-- 영향 파일: `codex/hooks/github-create-approval-guard.py`, `codex/hooks/test_github_create_approval_guard.py`, `codex/hooks/README.md`, `codex/sync-github-approval.py`, `codex/sync.sh`, `codex/verify.sh`, `codex/skills/ao-skill-update/SKILL.md`, `codex/skills/run-android-app/`, `codex/harnesses/scheduled-task-verification.py`
-
-관리 자산 선택 적용:
-
-```sh
-bash codex/sync.sh --hooks github-create-approval-guard
-bash codex/verify.sh --hooks github-create-approval-guard
-bash codex/sync.sh --skills run-android-app ao-skill-update
-bash codex/verify.sh --skills run-android-app ao-skill-update
-bash codex/sync.sh --harnesses scheduled-task-verification
-bash codex/verify.sh --harnesses scheduled-task-verification
-```
-
-예약 기록 형식과 완료 근거는 전역 볼트 `workflows/scheduled-task-verification.md`를 읽는다. 승인 훅의 이벤트·복구·신뢰 범위는 [`codex/hooks/README.md`](codex/hooks/README.md)를 읽는다.
-
-### 2026-10-21 - Codex 기존 리뷰 스킬 2종 삭제
-- 기존: `github-pr-review` 원본과 설치본, `terra-parallel-pr-review` 전역 설치본이 있었고 새 Sol 스킬은 기존 스킬의 검토 기준을 참조했다.
-- 변경: 요청한 두 Codex 스킬을 삭제하고, 필요한 호출 경로 검토와 후보 반증 기준은 Sol 스킬 안으로 옮긴다. README에서 Claude용 기존 스킬과 구분한다.
-- 이유: 기존 리뷰 스킬 삭제 후에도 Sol 두 차례 리뷰가 독립적으로 동작하게 한다.
-- 영향 파일: `codex/skills/github-pr-review/SKILL.md` 삭제, `codex/skills/sol-two-pass-pr-review/SKILL.md`, `README.md`, 전역 설치본 두 경로 삭제
-
-### 2026-10-21 - 신규 추가: `sol-two-pass-pr-review`
-- 기존: 단일 PR 인라인 리뷰와 독립 리뷰 스킬은 있었으나 Sol 2명의 리뷰, 수정, 새로운 2명의 재리뷰를 연결하는 Codex 절차는 없었다.
-- 변경: 차수마다 GPT-6.1 Sol high 리뷰어 2명을 새로 생성하고, 확인된 수정점의 인라인 리뷰, 수정과 검증, 동일 형식의 1차/2차 보고를 수행하는 스킬을 추가한다.
-- 이유: 리뷰 독립성을 유지하면서 각 차수의 발견 사항과 수정 근거를 추적한다.
-- 영향 파일: `codex/skills/sol-two-pass-pr-review/SKILL.md`, `README.md`
-
-### 2026-10-20 - 신규 추가: `/resume-review`
-- 종류: 커맨드
-- 목적: 이력서·포트폴리오를 훑어보기 기준, JD 대조, 사실 대조로 진단하고 고칠 목록을 우선순위로 내는 절차를 고정한다 (명시 호출 전용)
-- 영향 파일: `commands/resume-review.md`, `README.md`
-
-### 2026-10-20 - 신규 추가: `/resume-write`
-- 종류: 커맨드
-- 목적: '라벨: 설명', '이슈: 상황 → 한 일' 형식과 근거 경계를 지키며 전후 비교 → 승인 → 반영 → 확인 순서로 문구를 고치는 절차를 고정한다 (명시 호출 전용)
-- 영향 파일: `commands/resume-write.md`, `README.md`
+### 2026-11-03 - 신규 추가: `ao-voice`
+- 종류: 스킬
+- 목적: 슬랙, 일지, 회고, 공식 글, 업무 메모를 사용자 본인의 말투로 쓰거나 바꾼다.
+- 영향 파일: `skills/ao-voice/`, `README.md`, `changelog/2026-W43.md`
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 참조.
 
 ### 지난 변경내역
+- [`2026-W43`](changelog/2026-W43.md) - 2026-10-19 ~ 10-25
 - [`2026-W42`](changelog/2026-W42.md) - 2026-10-12 ~ 10-18
 - [`2026-W41`](changelog/2026-W41.md) - 2026-10-05 ~ 10-11
 - [`2026-W40`](changelog/2026-W40.md) - 2026-09-28 ~ 10-04
