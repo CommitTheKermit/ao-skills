@@ -35,6 +35,17 @@ def connect():
     return db
 
 
+def group_drained(pgid):
+    # 에뮬레이터 보조 프로세스처럼 명령 종료 직후 잠시 남는 자식은 스스로 끝날 때까지 기다린다.
+    # 유예 시간 뒤에도 남으면 겹침을 막기 위해 blocked로 둔다. 슬롯 잠금은 자식도 쥐고 있어 그동안 다음 작업은 시작하지 않는다.
+    deadline = time.monotonic() + float(os.environ.get('MOBILE_VALIDATION_BLOCK_GRACE_SECONDS', '60'))
+    while group_alive(pgid):
+        if time.monotonic() >= deadline:
+            return False
+        time.sleep(.5)
+    return True
+
+
 def process_birth(pid):
     result = subprocess.run(['ps', '-p', str(pid), '-o', 'lstart='], capture_output=True, text=True)
     return result.stdout.strip()
@@ -144,7 +155,7 @@ def run_job(db, args):
                 time.sleep(.2)
             result = 130 if cancelled else child.returncode
             # Detached/background descendants must not silently overlap the next job.
-            state = 'blocked' if group_alive(child.pid) else ('cancelled' if cancelled else 'finished')
+            state = 'blocked' if not group_drained(child.pid) else ('cancelled' if cancelled else 'finished')
             db.execute('UPDATE jobs SET state=?, exit_code=? WHERE id=?', (state, result, job))
             return result if state != 'blocked' else 2
         except BaseException:

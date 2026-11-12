@@ -97,6 +97,21 @@ class CoordinationTests(unittest.TestCase):
         self.assertEqual(self.job('raise SystemExit(7)').wait(timeout=8), 7)
         self.assertEqual(self.job('pass').wait(timeout=8), 0)
 
+    def test_short_lived_leftover_finishes_after_grace(self):
+        # 명령이 끝난 뒤 같은 그룹의 자식이 잠시 남아도 유예 시간 안에 끝나면 finished로 기록한다.
+        self.env['MOBILE_VALIDATION_BLOCK_GRACE_SECONDS'] = '5'
+        code = "import subprocess; subprocess.Popen(['sleep', '1'])"
+        self.assertEqual(self.job(code).wait(timeout=12), 0)
+        self.assertEqual([r for r in self.rows() if r['state'] == 'blocked'], [])
+        self.assertEqual(self.job('pass').wait(timeout=8), 0)
+
+    def test_leftover_beyond_grace_stays_blocked(self):
+        self.env['MOBILE_VALIDATION_BLOCK_GRACE_SECONDS'] = '1'
+        code = "import subprocess; subprocess.Popen(['sleep', '30'])"
+        self.assertEqual(self.job(code).wait(timeout=12), 2)
+        row = self.wait_state(state='blocked')[0]
+        os.killpg(row['pgid'], signal.SIGTERM)
+
     def test_crashed_supervisor_does_not_allow_overlap(self):
         first = self.job('import time; time.sleep(1.5)')
         row = self.wait_state()[0]

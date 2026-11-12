@@ -271,37 +271,18 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 | `/learn-by-doing` | 다음 구현에서 의미 있는 2~10줄을 사용자가 직접 쓰도록 TODO(human)을 남기고 요청 (명시 호출 전용) |
 | `/ao-skill-update` | 스킬/커맨드 변경 + 전역 동기화 + 커밋 + 푸시 |
 
-## 최근 변경내역 (2026-W45)
+## 최근 변경내역 (2026-W46)
 
-### 2026-11-06 - `document-memory-routing` 인계 문서를 라우팅 대상에서 뺀다
-- 기존: 적용 범위에 "인계 문서"가 있어, 인계 문서를 쓸 때마다 프로젝트 라우팅 파일에 "이어받을 때 읽는다" 줄이 쌓였다.
-- 변경: 인계 문서는 라우팅하지 않고 넘겨받는 세션에 경로를 직접 준다. 오래 지킬 결정·계약은 README나 주제별 문서로 옮겨 그 문서를 라우팅한다. 기존 인계 라우팅 줄도 같은 기준으로 정리한다.
-- 이유: 인계 문서는 다른 세션에 넘길 때만 쓰는데, 라우팅 때문에 이후 세션이 끝난 인계 문서를 계속 읽고 추적했다.
-- 영향 파일: `skills/document-memory-routing/SKILL.md`, `codex/skills/document-memory-routing/SKILL.md`
-
-### 2026-11-03 - 신규 추가: `resume-review` (커맨드 `/resume-review`, `/resume-write` 대체)
-- 종류: 스킬
-- 목적: 이력서 공개 피드백의 리뷰어 기준과 실제 반영 시행착오를 규칙서로 묶어, 다른 사람도 같은 시행착오 없이 이력서를 진단하고 단계별로 고치게 한다.
-- 기존: 진단(`/resume-review`)과 문구 수정(`/resume-write`) 커맨드 두 개, 규칙은 커맨드 본문에만 있음
-- 변경: 규칙서·시행착오·대조 스크립트를 가진 스킬 하나로 합치고 두 커맨드를 삭제
-- 영향 파일: `skills/resume-review/`, `commands/resume-review.md`(삭제), `commands/resume-write.md`(삭제), `README.md`
-
-### 2026-11-03 - 신규 추가: `ao-voice`
-- 종류: 스킬
-- 목적: 슬랙, 일지, 회고, 공식 글, 업무 메모를 사용자 본인의 말투로 쓰거나 바꾼다.
-- 영향 파일: `skills/ao-voice/`, `README.md`, `changelog/2026-W43.md`
-
-### 2026-11-03 - 플리파 원격 검증·Jev 로컬 검증 경로를 main에 반영
-- 공개 범위 확대에 맞춰 `jev-local-validation`, `run`의 개인 절대경로와 비밀 파일 위치 표기를 가린다.
-- 기존: Jev 로컬 검증이 개발 체크아웃과 PYTHONPATH를 직접 사용했다. 변경: 설치 영수증을 확인하는 공용 실행기로 고정 설치본을 격리 실행하고 Droidrun·agent 모드를 강제한다. 이유: 세션별 브랜치 차이로 예전 드라이버를 실행하지 않게 한다. 영향: `jev-local-validation` 실행기·회귀 검사·Portal 및 입력 안내, `plipa-remote-validation` 전환 경로, `codex/verify.sh`.
-- 기존 원격 장애 시 로컬 전환 금지에서, 접수 전 서버 꺼짐·연결 불가와 미확정 접수 없음이 확인되면 Jev 로컬 검증으로 이어지도록 변경한다. Mac 대기열·기기 임대·설치 검사는 유지하고 403·인증·설정 오류와 AAB·Lint 미지원은 구분한다. 영향: `jev-local-validation` 신규, 원격·앱 실행·기기 임대·모바일 대기열·플리파 run·AAB·심사 스킬, 전역 규칙 원본과 문서 라우팅.
-- Android 기본 검증을 플리파 원격으로, iOS를 로컬 대기열로 연결한다. 기존 로컬 실행 기본값으로 인한 Mac 경합을 막고 미지원 검증의 자동 로컬 전환을 금지한다. 영향: 원격·대기열·담당 등록 규칙, Android 실행·임대·AAB·심사·플리파 run·PR 리뷰 스킬.
-- 플리파 원격 검증 스킬과 SSH 클라이언트를 추가한다. 고정 커밋 제출·대기·취소·결과 ZIP 수집을 서버 실행기와 연결하고 Mac 대기열을 점유하지 않는다. 영향: `codex/skills/plipa-remote-validation`.
-- 기존 브랜치 재사용·AVD 임대에 기능 담당 등록과 로컬 모바일 FIFO 실행기를 추가한다. 여러 세션의 중복 구현과 빌드·기기 경합을 줄인다. `codex/skills/task-coordination`, `mobile-validation-queue`, `android-emulator-lease`, `run-android-app`, `sol-two-pass-pr-review`를 갱신하고, 설치본에만 있던 플리파 `run`을 관리 원본으로 편입한다. 원격 플리파는 제외한다.
+### 2026-11-12 - `mobile-validation-queue` blocked 판정 전에 유예 시간을 둔다
+- 기존: 명령이 끝나는 순간 같은 프로세스 그룹에 산 자식이 하나라도 있으면 즉시 `blocked`로 기록했다. 에뮬레이터 보조 프로세스처럼 몇 초 뒤 스스로 끝나는 자식 때문에 대기열 전체가 수동 `recover` 전까지 멈췄다.
+- 변경: 그룹이 비기를 최대 60초(`MOBILE_VALIDATION_BLOCK_GRACE_SECONDS`) 기다린 뒤 판정한다. 그 뒤에도 남으면 지금처럼 `blocked`로 둔다. 슬롯 잠금은 자식도 쥐고 있어 유예 중 다음 작업과 겹치지 않는다.
+- 이유: 책췍 Android 계측 실행 뒤 짧게 남은 자식 때문에 대기열이 두 번(약 10분, 약 50분) 멈췄다.
+- 영향 파일: `codex/skills/mobile-validation-queue/scripts/validation_queue.py`, `codex/skills/mobile-validation-queue/scripts/test_coordination.py`, `codex/skills/mobile-validation-queue/SKILL.md`
 
 > 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 참조.
 
 ### 지난 변경내역
+- [`2026-W45`](changelog/2026-W45.md) - 2026-11-02 ~ 11-08
 - [`2026-W43`](changelog/2026-W43.md) - 2026-10-19 ~ 10-25
 - [`2026-W42`](changelog/2026-W42.md) - 2026-10-12 ~ 10-18
 - [`2026-W41`](changelog/2026-W41.md) - 2026-10-05 ~ 10-11
