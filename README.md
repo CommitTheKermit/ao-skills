@@ -273,6 +273,12 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 
 ## 최근 변경내역 (2026-W46)
 
+### 2026-11-12 - `run-android-app` 설치 전 점검이 build-tools 37 서명 출력을 읽는다
+- 기존: `apksigner`의 `Signer #1 certificate SHA-256 digest:` 형식만 읽어, build-tools 37의 `V2 Signer: certificate SHA-256 digest:` 출력에서는 정상 APK도 `inspection_failed`로 막았다.
+- 변경: 두 형식을 모두 읽고, 서명 방식(V1·V2·V3)마다 반복되는 같은 인증서는 하나로 합친다.
+- 이유: 가장 높은 build-tools를 고르는 도구 탐색 때문에 37이 설치된 Mac에서 계측 설치가 항상 멈췄다.
+- 영향 파일: `codex/skills/run-android-app/scripts/preflight-install.py`, `codex/skills/run-android-app/scripts/test_preflight_install.py`
+
 ### 2026-11-12 - `mobile-validation-queue` blocked 판정 전에 유예 시간을 둔다
 - 기존: 명령이 끝나는 순간 같은 프로세스 그룹에 산 자식이 하나라도 있으면 즉시 `blocked`로 기록했다. 에뮬레이터 보조 프로세스처럼 몇 초 뒤 스스로 끝나는 자식 때문에 대기열 전체가 수동 `recover` 전까지 멈췄다.
 - 변경: 그룹이 비기를 최대 60초(`MOBILE_VALIDATION_BLOCK_GRACE_SECONDS`) 기다린 뒤 판정한다. 그 뒤에도 남으면 지금처럼 `blocked`로 둔다. 슬롯 잠금은 자식도 쥐고 있어 유예 중 다음 작업과 겹치지 않는다.

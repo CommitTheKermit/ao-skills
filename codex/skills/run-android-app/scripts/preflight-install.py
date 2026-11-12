@@ -38,12 +38,13 @@ def apk_metadata(aapt, signer, apk):
     package = re.search(r"^package: name='([^']+)' versionCode='(\d+)' versionName='([^']*)'", info, re.M)
     if not package:
         raise ValueError("APK 패키지와 버전을 읽지 못했습니다.")
-    certificates = re.findall(r"Signer #\d+ certificate SHA-256 digest:\s*([a-fA-F0-9:]+)",
+    # build-tools 36 이하는 "Signer #1 certificate ...", 37은 "V2 Signer: certificate ..."로 출력한다.
+    certificates = re.findall(r"(?:Signer #\d+|V\d+(?:\.\d+)? Signer:) certificate SHA-256 digest:\s*([a-fA-F0-9:]+)",
                               run([signer, "verify", "--print-certs", str(apk)]))
     if not certificates:
         raise ValueError("APK 서명 인증서를 확인하지 못했습니다.")
     return {"package":package[1], "version_code":int(package[2]), "version_name":package[3],
-            "signer_sha256":sorted(x.replace(":", "").lower() for x in certificates)}
+            "signer_sha256":sorted({x.replace(":", "").lower() for x in certificates})}
 
 
 def require_lease(serial):

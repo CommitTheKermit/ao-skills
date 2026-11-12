@@ -48,6 +48,14 @@ class PreflightTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 preflight.apk_metadata("aapt","signer","target.apk")
 
+    def test_build_tools_37_signer_format_and_duplicate_schemes(self):
+        output = "package: name='com.example' versionCode='3' versionName='1.0'"
+        signer = ("V1 Signer: certificate SHA-256 digest: AABB\n"
+                  "V2 Signer: certificate SHA-256 digest: AABB\n"
+                  "V3.1 Signer: certificate SHA-256 digest: aabb\n")
+        with patch.object(preflight, "run", side_effect=[output, signer]):
+            self.assertEqual(preflight.apk_metadata("aapt","signer","target.apk")["signer_sha256"], ["aabb"])
+
     def test_lease_owned_serial_only(self):
         import json
         with tempfile.TemporaryDirectory() as directory:
