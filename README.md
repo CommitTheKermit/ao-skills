@@ -254,9 +254,9 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 발동 표현: "내 말투로", "내가 쓴 것처럼", "내 문체로", "/ao-voice" 등.
 
 ### resume-review
-개발자 이력서·포트폴리오를 규칙서로 진단하고 고칠 목록을 만든 뒤 승인받은 항목부터 한 단계씩 고친다. 2026 드로이드나이츠 이력서 공개 피드백 세션의 리뷰어 3명 기준과 실제 수정에서 겪은 시행착오를 `references/rulebook.md`, `references/pitfalls.md`로 묶었다. 전후 숫자·링크·금지 기호 대조 스크립트(`scripts/compare_text.py`)를 포함한다. 기존 `/resume-review`, `/resume-write` 커맨드를 대체한다.
+개발자 이력서와 포트폴리오를 읽고 평가만 해서 피드백 보고서 하나를 낸다. 파일을 고치거나 PDF를 내보내거나 커밋하지 않고, 단계별 승인 없이 한 번에 끝낸다. 지적마다 위치, 원문, 문제, 기준의 출처, 읽는 사람이 받아들이는 방식, 고칠 방향, 확인 수준을 적는다. 규칙은 출처 종류(공개 피드백 세션, 시니어 1대1, 동료, AI)와 이유를 달아 `references/rulebook.md`에, 작성자 본인의 기준은 `references/author-criteria.md`에 따로 둔다. 공고와 근거 자료가 없을 때 무엇을 어떤 형태로 주면 되는지는 `references/context-guide.md`가 안내한다. `scripts/inventory.py`는 굵은 글씨, 링크, 숫자가 든 줄을 뽑는다.
 
-발동 표현: "이력서 봐줘", "이력서 피드백 반영", "포트폴리오 고쳐줘", "지원본 만들어줘", "/resume-review" 등.
+발동 표현: "이력서 봐줘", "이력서 피드백", "이력서 평가해줘", "포트폴리오 봐줘", "/resume-review" 등.
 
 ## 커맨드 목록
 
@@ -271,23 +271,16 @@ Codex 구현 작업을 검증 가능한 작은 단계로 나누고, 단계마다
 | `/learn-by-doing` | 다음 구현에서 의미 있는 2~10줄을 사용자가 직접 쓰도록 TODO(human)을 남기고 요청 (명시 호출 전용) |
 | `/ao-skill-update` | 스킬/커맨드 변경 + 전역 동기화 + 커밋 + 푸시 |
 
-## 최근 변경내역 (2026-W46)
+## 최근 변경내역 (2026-W47)
 
-### 2026-11-12 - `run-android-app` 설치 전 점검이 build-tools 37 서명 출력을 읽는다
-- 기존: `apksigner`의 `Signer #1 certificate SHA-256 digest:` 형식만 읽어, build-tools 37의 `V2 Signer: certificate SHA-256 digest:` 출력에서는 정상 APK도 `inspection_failed`로 막았다.
-- 변경: 두 형식을 모두 읽고, 서명 방식(V1·V2·V3)마다 반복되는 같은 인증서는 하나로 합친다.
-- 이유: 가장 높은 build-tools를 고르는 도구 탐색 때문에 37이 설치된 Mac에서 계측 설치가 항상 멈췄다.
-- 영향 파일: `codex/skills/run-android-app/scripts/preflight-install.py`, `codex/skills/run-android-app/scripts/test_preflight_install.py`
-
-### 2026-11-12 - `mobile-validation-queue` blocked 판정 전에 유예 시간을 둔다
-- 기존: 명령이 끝나는 순간 같은 프로세스 그룹에 산 자식이 하나라도 있으면 즉시 `blocked`로 기록했다. 에뮬레이터 보조 프로세스처럼 몇 초 뒤 스스로 끝나는 자식 때문에 대기열 전체가 수동 `recover` 전까지 멈췄다.
-- 변경: 그룹이 비기를 최대 60초(`MOBILE_VALIDATION_BLOCK_GRACE_SECONDS`) 기다린 뒤 판정한다. 그 뒤에도 남으면 지금처럼 `blocked`로 둔다. 슬롯 잠금은 자식도 쥐고 있어 유예 중 다음 작업과 겹치지 않는다.
-- 이유: 책췍 Android 계측 실행 뒤 짧게 남은 자식 때문에 대기열이 두 번(약 10분, 약 50분) 멈췄다.
-- 영향 파일: `codex/skills/mobile-validation-queue/scripts/validation_queue.py`, `codex/skills/mobile-validation-queue/scripts/test_coordination.py`, `codex/skills/mobile-validation-queue/SKILL.md`
-
-> 현재 주차(ISO week)의 변경만 여기 인라인으로 둔다. 지난 주차 이력은 [`changelog/`](changelog/) 참조.
+### 2026-11-17 - `resume-review`를 평가 전용 스킬로 다시 쓴다
+- 기존: 진단한 뒤 고칠 목록을 만들고 예고, 승인, 반영, 검증, 커밋을 단계마다 반복했다. 평가만 원해도 수정까지 갔고, 지적이 일반론에 가까웠으며, 공고와 근거가 없으면 없다고만 했다.
+- 변경: 평가에서 멈추고 보고서 하나를 한 번에 낸다. 네 독자 시점(훑는 사람, 채용 담당, 실무 리뷰어, 면접관)으로 읽고, 지적마다 원문과 기준의 출처, 읽는 사람의 반응, 확인 수준을 적는다. 규칙서에 시니어 1대1, 동료, AI 리뷰 출처를 더하고 출처끼리 갈리는 곳을 표로 두었다. 작성자 기준과 맥락 안내 문서를 새로 두었다. 수정 절차, 시행착오 목록(`pitfalls.md`), 전후 대조 스크립트(`compare_text.py`)는 뺐다.
+- 이유: 사용자가 얕은 지적, 원치 않는 수정, 무거운 절차, 기준과 맥락을 모르는 평가, 맥락을 주는 방법 안내가 없는 점을 문제로 들었다.
+- 영향 파일: `skills/resume-review/SKILL.md`, `skills/resume-review/references/rulebook.md`, `skills/resume-review/references/author-criteria.md`, `skills/resume-review/references/context-guide.md`, `skills/resume-review/scripts/inventory.py`, 삭제 `references/pitfalls.md`, `scripts/compare_text.py`
 
 ### 지난 변경내역
+- [`2026-W46`](changelog/2026-W46.md) - 2026-11-09 ~ 11-15
 - [`2026-W45`](changelog/2026-W45.md) - 2026-11-02 ~ 11-08
 - [`2026-W43`](changelog/2026-W43.md) - 2026-10-19 ~ 10-25
 - [`2026-W42`](changelog/2026-W42.md) - 2026-10-12 ~ 10-18
