@@ -156,8 +156,19 @@ def read_text(path):
             links.append((0, label, url))
         bold = ' '.join(re.findall(r'\*\*(.+?)\*\*', line))
         kind = '제목' if line.startswith('#') else '본문'
-        lines.append((0, kind, re.sub(r'\*\*|^#+\s*', '', line), bold))
+        lines.append((0, kind, re.sub(r'\*\*|^#+\s*|^[-*]\s+', '', line), bold))
     return lines, links, []
+
+
+def vague_phrase(text):
+    """걸린 곳을 낱말 끝까지 넓혀 돌려준다. '약 2'가 아니라 '약 2년간'."""
+    m = VAGUE.search(text)
+    end = m.end()
+    while end < len(text) and not text[end].isspace() and text[end] not in '()':
+        if text[end] in ',.' and not (end + 1 < len(text) and text[end + 1].isdigit()):
+            break
+        end += 1
+    return text[m.start():end].strip()
 
 
 def where(page):
@@ -207,10 +218,10 @@ def main():
     for page, text in numbered:
         print(f'{where(page)}{text}')
 
-    vague = [(p, t, VAGUE.search(t).group(0)) for p, k, t, b in lines if VAGUE.search(t)]
-    print(f'\n## 어림 표현이 든 줄 {len(vague)}개')
+    vague = [(p, t, vague_phrase(t)) for p, k, t, b in lines if VAGUE.search(t)]
+    print(f'\n## 어림 표현이 든 줄 {len(vague)}개 (따옴표 안이 걸린 표현)')
     for page, text, hit in vague:
-        print(f'{where(page)}({hit.strip()}) {text}')
+        print(f'{where(page)}"{hit}" <- {text}')
 
     longs = sorted(((len(t), p, t) for p, k, t, b in lines if len(t) >= LONG_LINE), reverse=True)
     print(f'\n## 긴 줄 {len(longs)}개 ({LONG_LINE}자 이상, 긴 순서)')
